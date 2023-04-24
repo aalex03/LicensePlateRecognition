@@ -14,11 +14,17 @@ class LicensePlateProcessor:
 
     @staticmethod
     def process(imagePath):
+        
+
+
         img = cv2.imread(imagePath,cv2.IMREAD_COLOR)
+
+
         img = cv2.resize(img, (620,480) )
+
+
+
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #convert to grey scale
-        cv2.imshow("",img)
-        cv2.waitKey()
 
         gray = cv2.bilateralFilter(gray, 11, 17, 17) #Blur to reduce noise
 
@@ -35,25 +41,33 @@ class LicensePlateProcessor:
 
         cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:10]
 
-        for elem in cnts:
-            print(elem)
         screenCnt = None
 
 
         # loop over our contours
 
         for c in cnts:
+
         # approximate the contour
+
             peri = cv2.arcLength(c, True)
+
             approx = cv2.approxPolyDP(c, 0.018 * peri, True)
+
+        
+
         # if our approximated contour has four points, then
+
         # we can assume that we have found our screen
+
             if len(approx) == 4:
+
                 screenCnt = approx
-            break
+
+                break
 
 
- 
+        
 
 
         if screenCnt is None:
@@ -63,7 +77,6 @@ class LicensePlateProcessor:
             print("No contour detected")
 
         else:
-
             detected = 1
 
 
@@ -92,12 +105,12 @@ class LicensePlateProcessor:
         Cropped = gray[topx:bottomx+1, topy:bottomy+1]
 
 
- 
+        
 
 
         #Read the number plate
 
-        text = pytesseract.image_to_string(Cropped, config='--psm 11')
+        text = pytesseract.image_to_string(Cropped, config='--psm 7')
 
         print("Detected Number is:",text)
 
@@ -110,4 +123,3 @@ class LicensePlateProcessor:
         cv2.waitKey(0)
 
         cv2.destroyAllWindows()
-
