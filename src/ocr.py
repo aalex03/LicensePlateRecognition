@@ -13,13 +13,12 @@ class LicensePlateProcessor:
         pass
 
     @staticmethod
-    def process(imagePath):
+    def process(image : Image) -> str:
         
-
-
-        img = cv2.imread(imagePath,cv2.IMREAD_COLOR)
-
-
+        image_np = np.array(image) #conversion from PIL image to cv2 image
+        img = cv2.cvtColor(image_np,cv2.COLOR_RGB2BGR)
+        cv2.imshow("",img)
+        cv2.waitKey()
         img = cv2.resize(img, (620,480) )
 
 
@@ -75,6 +74,8 @@ class LicensePlateProcessor:
             detected = 0
 
             print("No contour detected")
+            
+            return None
 
         else:
             detected = 1
@@ -123,3 +124,5 @@ class LicensePlateProcessor:
         cv2.waitKey(0)
 
         cv2.destroyAllWindows()
+        
+        return text
