@@ -9,7 +9,7 @@ class Camera:
     def capture() -> Image:
         camera = picamera.PiCamera()
         stream = BytesIO()
-        sleep(2)
+        sleep(4)
         camera.capture(stream,format="jpeg")
         image = Image.open(stream)
         return image

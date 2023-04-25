@@ -111,7 +111,7 @@ class LicensePlateProcessor:
 
         #Read the number plate
 
-        text = pytesseract.image_to_string(Cropped, config='--psm 7')
+        text = pytesseract.image_to_string(Cropped, config='--psm 11')
 
         print("Detected Number is:",text)
 
