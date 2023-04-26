@@ -13,40 +13,28 @@ class LicensePlateProcessor:
         pass
 
     @staticmethod
-    def process(image : Image) -> str:
+    def _blur(image, type : str, settings):
+        if type == "bilateral":
+            image = cv2.bilateralFilter(image, settings[0],settings[1],settings[2])
+        else:
+            if type == "gaussian":
+                image = cv2.GaussianBlur(image,(settings[0],settings[1]),settings[3])
+        return image
+
         
+
+    @staticmethod
+    def _convertPILtoCV2(image : Image):
         image_np = np.array(image) #conversion from PIL image to cv2 image
         img = cv2.cvtColor(image_np,cv2.COLOR_RGB2BGR)
-        
-        img = cv2.resize(img, (620,480) )
+        return img
 
-        cv2.imshow("",img)
-        cv2.waitKey()
-
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #convert to grey scale
-
-        gray = cv2.bilateralFilter(gray, 11, 17, 17) #Blur to reduce noise
-
-        #equalized_img = cv2.equalizeHist(gray) #Increase contrast
-
-        edged = cv2.Canny(gray, 30, 200) #Perform Edge detection
-
-
-        # find contours in the edged image, keep only the largest
-
-        # ones, and initialize our screen contour
-
+    @staticmethod
+    def _findContours(edged) -> list:
         cnts = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
         cnts = imutils.grab_contours(cnts)
-
         cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:10]
-
-        screenCnt = None
-
-
-        # loop over our contours
-
+        result = []
         for c in cnts:
 
         # approximate the contour
@@ -63,40 +51,36 @@ class LicensePlateProcessor:
 
             if len(approx) == 4:
 
-                screenCnt = approx
-
-                break
-
-
+                result.append(approx)
         
+        return result
 
+    @staticmethod
+    def _boxes(img):
+        h, w, _ = img.shape # assumes color image
 
-        if screenCnt is None:
+        # run tesseract, returning the bounding boxes
+        boxes = pytesseract.image_to_boxes(img) # also include any config options you use
 
-            detected = 0
+        # draw the bounding boxes on the image
+        for b in boxes.splitlines():
+            b = b.split(' ')
+            img = cv2.rectangle(img, (int(b[1]), h - int(b[2])), (int(b[3]), h - int(b[4])), (0, 255, 0), 2)
 
-            print("No contour detected")
-            
-            return None
+        # show annotated image and wait for keypress
+        cv2.imshow("filename", img)
+        cv2.waitKey(0)
 
-        else:
-            detected = 1
+    @staticmethod
+    def _mask_and_crop(img,contour):
 
+        mask = np.zeros(img.shape,np.uint8)
 
-        if detected == 1:
-
-            cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
-
-        cv2.imshow("contoured",img)
-        # Masking the part other than the number plate
-        cv2.imshow("corrected",img)
-        cv2.waitKey()
-        mask = np.zeros(gray.shape,np.uint8)
-
-        new_image = cv2.drawContours(mask,[screenCnt],0,255,-1,)
+        new_image = cv2.drawContours(mask,[contour],0,255,-1,)
 
         new_image = cv2.bitwise_and(img,img,mask=mask)
 
+        cv2.imshow("masked",new_image)
 
         # Now crop
 
@@ -106,23 +90,48 @@ class LicensePlateProcessor:
 
         (bottomx, bottomy) = (np.max(x), np.max(y))
 
-        Cropped = gray[topx:bottomx+1, topy:bottomy+1]
+        cropped = new_image[topx:bottomx+1, topy:bottomy+1]
+
+        return cropped
+
+    @staticmethod
+    def process(image : Image) -> str:
         
+        img = LicensePlateProcessor._convertPILtoCV2(image)
+        
+        img = cv2.resize(img, (620,480) )
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #convert to grey scale
 
 
-        #Read the number plate
-
-        text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 7')
-
-        print("Detected Number is:",text)
+        gray = LicensePlateProcessor._blur(gray,"bilateral",(11,17,17)) #Blur to reduce noise
 
 
-        cv2.imshow('image',img)
+        cv2.imshow("",gray)
+        cv2.waitKey()
 
-        cv2.imshow('Cropped',Cropped)
+        #(_ , gray) = cv2.threshold(gray,0,255,cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU) 
+        #gray = cv2.GaussianBlur(gray,(3,3),0)
+        #gray= cv2.equalizeHist(gray) #Increase contrast
 
+        edged = cv2.Canny(gray, 30, 200) #Perform Edge detection
 
-        cv2.waitKey(0)
+        contours = LicensePlateProcessor._findContours(edged)
+        
+        print(len(contours))
+
+        cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
+
+        cv2.imshow("contoured",img)
+        cv2.waitKey()
+        i = 0
+        for c in contours:
+            cropped = LicensePlateProcessor._mask_and_crop(gray,c)
+            text = pytesseract.image_to_string(cropped, config='-c tessedit_char_whitelist=QWERTYUIPASDFGHJKLZXCVBNM1234567890 --psm 11')
+            print(f"text for crop {i}: {text}")
+            cv2.imshow(f"crop {i}",cropped)
+            i = i+1
+            cv2.waitKey()
 
         cv2.destroyAllWindows()
         
