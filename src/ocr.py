@@ -17,15 +17,17 @@ class LicensePlateProcessor:
         
         image_np = np.array(image) #conversion from PIL image to cv2 image
         img = cv2.cvtColor(image_np,cv2.COLOR_RGB2BGR)
-        cv2.imshow("",img)
-        cv2.waitKey()
+        
         img = cv2.resize(img, (620,480) )
 
-
+        cv2.imshow("",img)
+        cv2.waitKey()
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #convert to grey scale
 
         gray = cv2.bilateralFilter(gray, 11, 17, 17) #Blur to reduce noise
+
+        #equalized_img = cv2.equalizeHist(gray) #Increase contrast
 
         edged = cv2.Canny(gray, 30, 200) #Perform Edge detection
 
@@ -85,9 +87,10 @@ class LicensePlateProcessor:
 
             cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
 
-
+        cv2.imshow("contoured",img)
         # Masking the part other than the number plate
-
+        cv2.imshow("corrected",img)
+        cv2.waitKey()
         mask = np.zeros(gray.shape,np.uint8)
 
         new_image = cv2.drawContours(mask,[screenCnt],0,255,-1,)
@@ -97,21 +100,19 @@ class LicensePlateProcessor:
 
         # Now crop
 
-        (x, y) = np.where(mask == 255)
+        (x, y) = np.where(mask == 255) 
 
         (topx, topy) = (np.min(x), np.min(y))
 
         (bottomx, bottomy) = (np.max(x), np.max(y))
 
         Cropped = gray[topx:bottomx+1, topy:bottomy+1]
-
-
         
 
 
         #Read the number plate
 
-        text = pytesseract.image_to_string(Cropped, config='--psm 11')
+        text = pytesseract.image_to_string(Cropped, config='-l eng --oem 3 --psm 7')
 
         print("Detected Number is:",text)
 
