@@ -122,12 +122,11 @@ class LicensePlateProcessor:
 
         cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
 
-        cv2.imshow("contoured",img)
-        cv2.waitKey()
         i = 0
         for c in contours:
             cropped = LicensePlateProcessor._mask_and_crop(gray,c)
-            text = pytesseract.image_to_string(cropped, config='-c tessedit_char_whitelist=QWERTYUIPASDFGHJKLZXCVBNM1234567890 --psm 11')
+            cropped = cv2.bitwise_not(cropped)
+            text = pytesseract.image_to_string(cropped, config='-c tessedit_char_whitelist=QWERTYUIOPASDFGHJKLZXCVBNM1234567890 --psm 7')
             print(f"text for crop {i}: {text}")
             cv2.imshow(f"crop {i}",cropped)
             i = i+1
