@@ -1,3 +1,4 @@
+""""
 import picamera
 from io import BytesIO
 from time import sleep
@@ -13,4 +14,4 @@ class Camera:
         camera.capture(stream,format="jpeg")
         image = Image.open(stream)
         return image
-
+"""

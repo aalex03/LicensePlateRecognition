@@ -1,59 +1,57 @@
 import cv2
 
-import imutils
+import imutils 
 
 import numpy as np
 
 import pytesseract
 
+import validator as vali
+
 from PIL import Image
+
 
 class LicensePlateProcessor:
     def __init__(self) -> None:
         pass
 
     @staticmethod
-    def process(image : Image) -> str:
-        
-        image_np = np.array(image) #conversion from PIL image to cv2 image
-        img = cv2.cvtColor(image_np,cv2.COLOR_RGB2BGR)
-        cv2.imshow("",img)
+    def process(image: Image) -> str:
+
+        image_np = np.array(image)  # conversion from PIL image to cv2 image
+        img = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+        cv2.imshow("", img)
         cv2.waitKey()
-        img = cv2.resize(img, (620,480) )
+        img = cv2.resize(img, (620, 480))
 
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # convert to grey scale
 
+        gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Blur to reduce noise
 
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #convert to grey scale
-
-        gray = cv2.bilateralFilter(gray, 11, 17, 17) #Blur to reduce noise
-
-        edged = cv2.Canny(gray, 30, 200) #Perform Edge detection
-
+        edged = cv2.Canny(gray, 30, 200)  # Perform Edge detection
 
         # find contours in the edged image, keep only the largest
 
         # ones, and initialize our screen contour
 
-        cnts = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cv2.findContours(
+            edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         cnts = imutils.grab_contours(cnts)
 
-        cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:10]
+        cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:10]
 
         screenCnt = None
-
 
         # loop over our contours
 
         for c in cnts:
 
-        # approximate the contour
+            # approximate the contour
 
             peri = cv2.arcLength(c, True)
 
             approx = cv2.approxPolyDP(c, 0.018 * peri, True)
-
-        
 
         # if our approximated contour has four points, then
 
@@ -65,35 +63,28 @@ class LicensePlateProcessor:
 
                 break
 
-
-        
-
-
         if screenCnt is None:
 
             detected = 0
 
             print("No contour detected")
-            
+
             return None
 
         else:
             detected = 1
 
-
         if detected == 1:
 
             cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
 
-
         # Masking the part other than the number plate
 
-        mask = np.zeros(gray.shape,np.uint8)
+        mask = np.zeros(gray.shape, np.uint8)
 
-        new_image = cv2.drawContours(mask,[screenCnt],0,255,-1,)
+        new_image = cv2.drawContours(mask, [screenCnt], 0, 255, -1,)
 
-        new_image = cv2.bitwise_and(img,img,mask=mask)
-
+        new_image = cv2.bitwise_and(img, img, mask=mask)
 
         # Now crop
 
@@ -105,24 +96,23 @@ class LicensePlateProcessor:
 
         Cropped = gray[topx:bottomx+1, topy:bottomy+1]
 
-
+        # Read the number plate
         
+        
+        text =str(pytesseract.image_to_string(Cropped, config='--psm 6 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+        print("Detected Number is:", text)
+        vali.LicensePlateValidator.algo(text)
+  
+        cv2.imshow('image', img)
 
-
-        #Read the number plate
-
-        text = pytesseract.image_to_string(Cropped, config='--psm 11')
-
-        print("Detected Number is:",text)
-
-
-        cv2.imshow('image',img)
-
-        cv2.imshow('Cropped',Cropped)
-
+        cv2.imshow('Cropped', Cropped)
 
         cv2.waitKey(0)
 
         cv2.destroyAllWindows()
-        
+
         return text
+    
+test_img=Image.open("D:\AC_LABS_2023_VEONEER\python_workspace\LicensePlateRecognition\data\p7.jpg")
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+LicensePlateProcessor.process(test_img)
