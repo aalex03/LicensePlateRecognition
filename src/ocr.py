@@ -10,7 +10,8 @@ import validator as vali
 
 from PIL import Image
 
-
+f = open("test_runs.txt", "w")
+psm_val=6 #default
 class LicensePlateProcessor:
     def __init__(self) -> None:
         pass
@@ -20,7 +21,7 @@ class LicensePlateProcessor:
 
         image_np = np.array(image)  # conversion from PIL image to cv2 image
         img = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
-        cv2.imshow("", img)
+        #cv2.imshow("", img)
         cv2.waitKey()
         img = cv2.resize(img, (620, 480))
 
@@ -95,14 +96,18 @@ class LicensePlateProcessor:
         (bottomx, bottomy) = (np.max(x), np.max(y))
 
         Cropped = gray[topx:bottomx+1, topy:bottomy+1]
+        
+        (thresh, Cropped )= cv2.threshold( Cropped, 127, 255, cv2.THRESH_BINARY)
+        
+        Cropped = ~Cropped
 
         # Read the number plate
         
         
-        text =str(pytesseract.image_to_string(Cropped, config='--psm 6 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
-        print("Detected Number is:", text)
-        vali.LicensePlateValidator.algo(text)
-  
+        text =str(pytesseract.image_to_string(Cropped, config=f'--psm {psm_val} -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+        f.write(f'  Detected text is:{text}\n')
+        f.write("   " + vali.LicensePlateValidator.algo(text))
+        """
         cv2.imshow('image', img)
 
         cv2.imshow('Cropped', Cropped)
@@ -110,9 +115,23 @@ class LicensePlateProcessor:
         cv2.waitKey(0)
 
         cv2.destroyAllWindows()
-
+        """
         return text
-    
-test_img=Image.open("D:\AC_LABS_2023_VEONEER\python_workspace\LicensePlateRecognition\data\p7.jpg")
+"""
+test_img=Image.open("D:\AC_LABS_2023_VEONEER\python_workspace\LicensePlateRecognition\data\logan_front.jpg")
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 LicensePlateProcessor.process(test_img)
+"""
+for psm_val in [6,7,8,11,12,13]:
+    f.write(f'Test pentru valoarea psm {psm_val}\n')
+    for photo_index in range(9,27):
+        f.write(f'  Test pentru poza p{photo_index}.jpg\n')
+        test_img=Image.open(f'D:\AC_LABS_2023_VEONEER\python_workspace\LicensePlateRecognition\data\p{photo_index}.jpg')
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        LicensePlateProcessor.process(test_img)
+        f.write("\n\n")
+    print(f'Incheiat test pentru valoarea psm {psm_val}\n')
+
+f.close()
+
+
