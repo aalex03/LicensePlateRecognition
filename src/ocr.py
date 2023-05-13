@@ -67,9 +67,6 @@ class LicensePlateProcessor:
             b = b.split(' ')
             img = cv2.rectangle(img, (int(b[1]), h - int(b[2])), (int(b[3]), h - int(b[4])), (0, 255, 0), 2)
 
-        # show annotated image and wait for keypress
-        cv2.imshow("filename", img)
-        cv2.waitKey(0)
 
     @staticmethod
     def _mask_and_crop(img,contour):
@@ -79,8 +76,6 @@ class LicensePlateProcessor:
         new_image = cv2.drawContours(mask,[contour],0,255,-1,)
 
         new_image = cv2.bitwise_and(img,img,mask=mask)
-
-        cv2.imshow("masked",new_image)
 
         # Now crop
 
@@ -106,32 +101,21 @@ class LicensePlateProcessor:
 
         gray = LicensePlateProcessor._blur(gray,"bilateral",(11,17,17)) #Blur to reduce noise
 
-
-        cv2.imshow("",gray)
-        cv2.waitKey()
-
-        #(_ , gray) = cv2.threshold(gray,0,255,cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU) 
-        #gray = cv2.GaussianBlur(gray,(3,3),0)
-        #gray= cv2.equalizeHist(gray) #Increase contrast
-
         edged = cv2.Canny(gray, 30, 200) #Perform Edge detection
 
         contours = LicensePlateProcessor._findContours(edged)
         
-        print(len(contours))
+        print(f"Contours found: {len(contours)}")
 
         cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
 
-        i = 0
+        i = 1
         for c in contours:
             cropped = LicensePlateProcessor._mask_and_crop(gray,c)
             cropped = cv2.bitwise_not(cropped)
             text = pytesseract.image_to_string(cropped, config='-c tessedit_char_whitelist=QWERTYUIOPASDFGHJKLZXCVBNM1234567890 --psm 7')
-            print(f"text for crop {i}: {text}")
-            cv2.imshow(f"crop {i}",cropped)
+            print(f"Text for crop {i}: {text.strip()}")
             i = i+1
-            cv2.waitKey()
 
-        cv2.destroyAllWindows()
         
-        return text
+        return text.strip()
