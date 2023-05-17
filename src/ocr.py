@@ -21,7 +21,11 @@ class LicensePlateProcessor:
                 image = cv2.GaussianBlur(image,(settings[0],settings[1]),settings[3])
         return image
 
-        
+    @staticmethod
+    def _threshold(image):
+        image = cv2.adaptiveThreshold(image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
+        return image
+
 
     @staticmethod
     def _convertPILtoCV2(image : Image):
@@ -67,6 +71,10 @@ class LicensePlateProcessor:
             b = b.split(' ')
             img = cv2.rectangle(img, (int(b[1]), h - int(b[2])), (int(b[3]), h - int(b[4])), (0, 255, 0), 2)
 
+    @staticmethod
+    def _saveImages(images):
+        for (name,image) in images:
+            cv2.imwrite(f".temp/{name}.png",image)
 
     @staticmethod
     def _mask_and_crop(img,contour):
@@ -93,16 +101,15 @@ class LicensePlateProcessor:
     def process(image : Image) -> str:
         
         img = LicensePlateProcessor._convertPILtoCV2(image)
-        
-        img = cv2.resize(img, (620,480) )
-
+        images = []
+        #img = cv2.resize(img, (620,480) )
+        images.append(("original",img))
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #convert to grey scale
-
-
-        gray = LicensePlateProcessor._blur(gray,"bilateral",(11,17,17)) #Blur to reduce noise
-
-        edged = cv2.Canny(gray, 30, 200) #Perform Edge detection
-
+        images.append(("gray",gray))
+        blur = LicensePlateProcessor._blur(gray,"bilateral",(11,17,17)) #Blur to reduce noise
+        images.append(("blur",blur))
+        edged = cv2.Canny(blur, 30, 200) #Perform Edge detection
+        images.append(("edged",edged))
         contours = LicensePlateProcessor._findContours(edged)
         
         print(f"Contours found: {len(contours)}")
