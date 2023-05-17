@@ -120,9 +120,10 @@ class LicensePlateProcessor:
         for c in contours:
             cropped = LicensePlateProcessor._mask_and_crop(gray,c)
             cropped = cv2.bitwise_not(cropped)
+            images.append((f"crop{i}",cropped))
             text = pytesseract.image_to_string(cropped, config='-c tessedit_char_whitelist=QWERTYUIOPASDFGHJKLZXCVBNM1234567890 --psm 7')
             print(f"Text for crop {i}: {text.strip()}")
             i = i+1
 
-        
+        LicensePlateProcessor._saveImages(images)
         return text.strip()
