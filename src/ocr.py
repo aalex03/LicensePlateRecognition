@@ -60,18 +60,6 @@ class LicensePlateProcessor:
         return result
 
     @staticmethod
-    def _boxes(img):
-        h, w, _ = img.shape # assumes color image
-
-        # run tesseract, returning the bounding boxes
-        boxes = pytesseract.image_to_boxes(img) # also include any config options you use
-
-        # draw the bounding boxes on the image
-        for b in boxes.splitlines():
-            b = b.split(' ')
-            img = cv2.rectangle(img, (int(b[1]), h - int(b[2])), (int(b[3]), h - int(b[4])), (0, 255, 0), 2)
-
-    @staticmethod
     def _saveImages(images):
         for (name,image) in images:
             cv2.imwrite(f".temp/{name}.png",image)
