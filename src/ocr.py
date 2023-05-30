@@ -124,7 +124,7 @@ LicensePlateProcessor.process(test_img)
 """
 for psm_val in [6,7,8,11,12,13]:
     f.write(f'Test pentru valoarea psm {psm_val}\n')
-    for photo_index in range(9,27):
+    for photo_index in range(9,34):
         f.write(f'  Test pentru poza p{photo_index}.jpg\n')
         test_img=Image.open(f'D:\AC_LABS_2023_VEONEER\python_workspace\LicensePlateRecognition\data\p{photo_index}.jpg')
         pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'

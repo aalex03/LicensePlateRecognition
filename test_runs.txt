@@ -82,6 +82,29 @@ SS
   Test pentru poza p26.jpg
 
 
+  Test pentru poza p27.jpg
+
+
+  Test pentru poza p28.jpg
+
+
+  Test pentru poza p29.jpg
+
+
+  Test pentru poza p30.jpg
+  Detected text is:
+   No Romanian number detected
+
+  Test pentru poza p31.jpg
+
+
+  Test pentru poza p32.jpg
+
+
+  Test pentru poza p33.jpg
+  Detected text is:
+   No Romanian number detected
+
 Test pentru valoarea psm 7
   Test pentru poza p9.jpg
   Detected text is:MH14WOW
@@ -161,6 +184,29 @@ Test pentru valoarea psm 7
 
   Test pentru poza p26.jpg
 
+
+  Test pentru poza p27.jpg
+
+
+  Test pentru poza p28.jpg
+
+
+  Test pentru poza p29.jpg
+
+
+  Test pentru poza p30.jpg
+  Detected text is:
+   No Romanian number detected
+
+  Test pentru poza p31.jpg
+
+
+  Test pentru poza p32.jpg
+
+
+  Test pentru poza p33.jpg
+  Detected text is:
+   No Romanian number detected
 
 Test pentru valoarea psm 8
   Test pentru poza p9.jpg
@@ -243,6 +289,29 @@ Test pentru valoarea psm 8
   Test pentru poza p26.jpg
 
 
+  Test pentru poza p27.jpg
+
+
+  Test pentru poza p28.jpg
+
+
+  Test pentru poza p29.jpg
+
+
+  Test pentru poza p30.jpg
+  Detected text is:
+   No Romanian number detected
+
+  Test pentru poza p31.jpg
+
+
+  Test pentru poza p32.jpg
+
+
+  Test pentru poza p33.jpg
+  Detected text is:
+   No Romanian number detected
+
 Test pentru valoarea psm 11
   Test pentru poza p9.jpg
   Detected text is:MH14WOW
@@ -322,6 +391,29 @@ R7NIRAL
 
   Test pentru poza p26.jpg
 
+
+  Test pentru poza p27.jpg
+
+
+  Test pentru poza p28.jpg
+
+
+  Test pentru poza p29.jpg
+
+
+  Test pentru poza p30.jpg
+  Detected text is:
+   No Romanian number detected
+
+  Test pentru poza p31.jpg
+
+
+  Test pentru poza p32.jpg
+
+
+  Test pentru poza p33.jpg
+  Detected text is:
+   No Romanian number detected
 
 Test pentru valoarea psm 12
   Test pentru poza p9.jpg
@@ -408,6 +500,29 @@ W
   Test pentru poza p26.jpg
 
 
+  Test pentru poza p27.jpg
+
+
+  Test pentru poza p28.jpg
+
+
+  Test pentru poza p29.jpg
+
+
+  Test pentru poza p30.jpg
+  Detected text is:
+   No Romanian number detected
+
+  Test pentru poza p31.jpg
+
+
+  Test pentru poza p32.jpg
+
+
+  Test pentru poza p33.jpg
+  Detected text is:
+   No Romanian number detected
+
 Test pentru valoarea psm 13
   Test pentru poza p9.jpg
   Detected text is:MH14WOW
@@ -488,4 +603,27 @@ Test pentru valoarea psm 13
 
   Test pentru poza p26.jpg
 
+
+  Test pentru poza p27.jpg
+
+
+  Test pentru poza p28.jpg
+
+
+  Test pentru poza p29.jpg
+
+
+  Test pentru poza p30.jpg
+  Detected text is:
+   No Romanian number detected
+
+  Test pentru poza p31.jpg
+
+
+  Test pentru poza p32.jpg
+
+
+  Test pentru poza p33.jpg
+  Detected text is:
+   No Romanian number detected
 
