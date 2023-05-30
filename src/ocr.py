@@ -12,6 +12,17 @@ from PIL import Image
 
 f = open("test_runs.txt", "w")
 psm_val=6 #default
+test_data = {}
+license_nr_expected = []
+
+def init_test_data():
+    for i in range(49):
+        picture_name = f"p{i}"
+        license_nr_detected = ""
+        test_data[picture_name] = {
+            'string': license_nr_expected[i],
+            'output_string': license_nr_detected
+        }
 class LicensePlateProcessor:
     def __init__(self) -> None:
         pass
@@ -68,7 +79,7 @@ class LicensePlateProcessor:
 
             detected = 0
 
-            print("No contour detected")
+           #print("No contour detected")
 
             return None
 
@@ -122,9 +133,10 @@ test_img=Image.open("D:\AC_LABS_2023_VEONEER\python_workspace\LicensePlateRecogn
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 LicensePlateProcessor.process(test_img)
 """
+init_test_data()
 for psm_val in [6,7,8,11,12,13]:
     f.write(f'Test pentru valoarea psm {psm_val}\n')
-    for photo_index in range(9,34):
+    for photo_index in range(1,49):
         f.write(f'  Test pentru poza p{photo_index}.jpg\n')
         test_img=Image.open(f'D:\AC_LABS_2023_VEONEER\python_workspace\LicensePlateRecognition\data\p{photo_index}.jpg')
         pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
