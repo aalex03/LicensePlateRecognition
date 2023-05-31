@@ -1,7 +1,7 @@
 #include <mysql/mysql.h>
 #include <stdio.h>
 #include <stdlib.h>
-int car_exists_in_db=0;
+int car_not_in_db=0;
 void finish_with_error(MYSQL *con)
 {
   fprintf(stderr, "%s\n", mysql_error(con));
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   
   //check if car exists
       if ((row = mysql_fetch_row(result)) != NULL) {
-        car_exists_in_db = 1;
+        car_not_in_db = 1;
     }
   
   
