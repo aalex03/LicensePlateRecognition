@@ -20,7 +20,7 @@ void runPythonScript(const char* scriptPath){
      pclose(pipe);
 }
 int main(){
-    const char* scriptPath="";
+    const char* scriptPath="main.py";
     runPythonScript(scriptPath);
     return 0;
 }

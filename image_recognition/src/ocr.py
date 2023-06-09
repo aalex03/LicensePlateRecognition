@@ -147,19 +147,19 @@ class LicensePlateProcessor:
             contours = LicensePlateProcessor._haar_cascade(img,images)
         i = 0
         if len(contours) == 0:
-            print("no license plate found")
+            #print("no license plate found")
             return [""]
         for c in contours:
             i = i+1
             cropped = LicensePlateProcessor._mask_and_crop(img,c)
             cropped = cv2.bitwise_not(cropped)
             images.append((f"cropped{i}",cropped))
-            for psm_val in [1,3,4,5,6,7,8,9,10,11,12,13]:
+            for psm_val in [3,7,9,13]:
                 text = pytesseract.image_to_string(cropped, config=f'-c tessedit_char_whitelist=QWERTYUIOPASDFGHJKLZXCVBNM1234567890 --psm {psm_val}')
                 if text.strip() != "":
-                    print(f"Text for crop {i}: {text.strip()} at psm {psm_val}")
+                    #print(f"Text for crop {i}: {text.strip()} at psm {psm_val}")
                     plates.append(text.strip())
         if saveImages == True:
-            print("Saving images")
+            #print("Saving images")
             LicensePlateProcessor._saveImages(images)
         return plates
