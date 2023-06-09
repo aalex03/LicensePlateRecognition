@@ -9,6 +9,7 @@ import pytesseract
 from PIL import Image
 
 class LicensePlateProcessor:
+    images = []
     def __init__(self) -> None:
         pass
 
@@ -66,8 +67,8 @@ class LicensePlateProcessor:
 
     @staticmethod
     def _mask_and_crop(img,contour):
-
-        mask = np.zeros(img.shape,np.uint8)
+        print(img.shape)
+        mask = np.zeros(img.shape[:2],np.uint8)
 
         new_image = cv2.drawContours(mask,[contour],0,255,-1,)
 
@@ -108,35 +109,54 @@ class LicensePlateProcessor:
         deskewed_image = cv2.warpAffine(image, rotation_matrix, (cols, rows), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
         
         return deskewed_image
+    
     @staticmethod
-    def process(image : Image) -> str:
+    def _haar_cascade(image,imgArray):
+        plate_cascade = cv2.CascadeClassifier("data/haarcascade_russian_plate_number.xml")
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        plates = plate_cascade.detectMultiScale(gray, 1.3, 5)
+        contours = []
+        for (x, y, w, h) in plates:
+            contour_points = np.array([(x, y), (x, y + h), (x + w, y + h), (x + w, y)])
+            contours.append(contour_points)
+
+        cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
+        return contours
+    
+    @staticmethod
+    def _canny_detection(image,imgArray):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #convert to grey scale
+        imgArray.append(("gray",gray))
+        blur = LicensePlateProcessor._blur(gray,"bilateral",(11,17,17)) #Blur to reduce noise
+        imgArray.append(("blur",blur))
+        edged = cv2.Canny(blur, 30, 200) #Perform Edge detection
+        contours = LicensePlateProcessor._findContours(edged)
+        imgArray.append(("edged",edged))
+        cv2.drawContours(image, contours, -1, (0, 255, 0), 3)
+        return contours
+    
+    @staticmethod
+    def process(image : Image, option : str, saveImages : bool) -> list:
         
         img = LicensePlateProcessor._convertPILtoCV2(image)
         images = []
-        #img = cv2.resize(img, (620,480) )
-        images.append(("original",img))
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #convert to grey scale
-        images.append(("gray",gray))
-        blur = LicensePlateProcessor._blur(gray,"bilateral",(11,17,17)) #Blur to reduce noise
-        images.append(("blur",blur))
-        edged = cv2.Canny(blur, 30, 200) #Perform Edge detection
-        images.append(("edged",edged))
-        contours = LicensePlateProcessor._findContours(edged)
-        
-        print(f"Contours found: {len(contours)}")
-
-        cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
-
-        i = 1
+        plates = []
+        if option == "canny":
+            contours = LicensePlateProcessor._canny_detection(img,images)
+        elif option == "haar":
+            contours = LicensePlateProcessor._haar_cascade(img,images)
+        i = 0
         for c in contours:
-            cropped = LicensePlateProcessor._mask_and_crop(gray,c)
+            i = i+1
+            cropped = LicensePlateProcessor._mask_and_crop(img,c)
             cropped = cv2.bitwise_not(cropped)
-            images.append((f"crop{i}",cropped))
+            images.append((f"cropped{i}",cropped))
             for psm_val in [1,3,4,5,6,7,8,9,10,11,12,13]:
                 text = pytesseract.image_to_string(cropped, config=f'-c tessedit_char_whitelist=QWERTYUIOPASDFGHJKLZXCVBNM1234567890 --psm {psm_val}')
                 if text.strip() != "":
                     print(f"Text for crop {i}: {text.strip()} at psm {psm_val}")
-            i = i+1
-
-        LicensePlateProcessor._saveImages(images)
-        return text.strip()
+                    plates.append(text.strip())
+        if saveImages == True:
+            print("Saving images")
+            LicensePlateProcessor._saveImages(images)
+        return plates
