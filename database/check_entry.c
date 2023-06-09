@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     }
 
     char query[255];
-    sprintf(query,"SELECT * from cars WHERE nr_inmatriculare = %s",argv[1]);
+    sprintf(query,"SELECT * from cars WHERE nr_inmatriculare = '%s';",argv[1]);
     MYSQL_RES *result;
     MYSQL_ROW row;
     if(mysql_query(con,query))
@@ -38,14 +38,14 @@ int main(int argc, char **argv)
         finish_with_error(con);
     }
     result = mysql_store_result(con);
-    if(result == NULL)
+    if(mysql_num_rows(result) == 0)
     {
-        printf("License plate %s not in database.",argv[1]);
-        finish_with_error(con);
+        printf("License plate %s not in database.\n",argv[1]);
+        mysql_close(con);
+        exit(1);
     }
-
     row = mysql_fetch_row(result);
-    printf("Found %s in db, welcome %s.\n",row[1],row[0]);
+    printf("Found %s in db, welcome %s.\n",row[2],row[1]);
     mysql_close(con);
     exit(0);
 }
