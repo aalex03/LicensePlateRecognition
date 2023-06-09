@@ -67,7 +67,6 @@ class LicensePlateProcessor:
 
     @staticmethod
     def _mask_and_crop(img,contour):
-        print(img.shape)
         mask = np.zeros(img.shape[:2],np.uint8)
 
         new_image = cv2.drawContours(mask,[contour],0,255,-1,)
@@ -114,6 +113,7 @@ class LicensePlateProcessor:
     def _haar_cascade(image,imgArray):
         plate_cascade = cv2.CascadeClassifier("data/haarcascade_russian_plate_number.xml")
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        imgArray.append(("gray",gray))
         plates = plate_cascade.detectMultiScale(gray, 1.3, 5)
         contours = []
         for (x, y, w, h) in plates:
@@ -146,6 +146,9 @@ class LicensePlateProcessor:
         elif option == "haar":
             contours = LicensePlateProcessor._haar_cascade(img,images)
         i = 0
+        if len(contours) == 0:
+            print("no license plate found")
+            return [""]
         for c in contours:
             i = i+1
             cropped = LicensePlateProcessor._mask_and_crop(img,c)

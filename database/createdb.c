@@ -31,39 +31,7 @@ int main(int argc, char **argv)
       finish_with_error(con);
   }
 
-  if (mysql_query(con, "CREATE TABLE cars(id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255), price INT)")) {
-      finish_with_error(con);
-  }
-
-  if (mysql_query(con, "INSERT INTO cars VALUES(1,'Audi',52642)")) {
-      finish_with_error(con);
-  }
-
-  if (mysql_query(con, "INSERT INTO cars VALUES(2,'Mercedes',57127)")) {
-      finish_with_error(con);
-  }
-
-  if (mysql_query(con, "INSERT INTO cars VALUES(3,'Skoda',9000)")) {
-      finish_with_error(con);
-  }
-
-  if (mysql_query(con, "INSERT INTO cars VALUES(4,'Volvo',29000)")) {
-      finish_with_error(con);
-  }
-
-  if (mysql_query(con, "INSERT INTO cars VALUES(5,'Bentley',350000)")) {
-      finish_with_error(con);
-  }
-
-  if (mysql_query(con, "INSERT INTO cars VALUES(6,'Citroen',21000)")) {
-      finish_with_error(con);
-  }
-
-  if (mysql_query(con, "INSERT INTO cars VALUES(7,'Hummer',41400)")) {
-      finish_with_error(con);
-  }
-
-  if (mysql_query(con, "INSERT INTO cars VALUES(8,'Volkswagen',21600)")) {
+  if (mysql_query(con, "CREATE TABLE cars(id INT PRIMARY KEY AUTO_INCREMENT, nume_angajat VARCHAR(255), nr_inmatriculare VARCHAR(255), UNIQUE (nr_inmatriculare));")) {
       finish_with_error(con);
   }
 
