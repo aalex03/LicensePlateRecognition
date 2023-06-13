@@ -188,12 +188,9 @@ class LicensePlateProcessor:
         for c in contours:
             i = i+1
             cropped = LicensePlateProcessor._mask_and_crop(img,c)
-            #cropped = cv2.bitwise_not(cropped)
             cropped = LicensePlateProcessor._sharpen_image(cropped)
             images.append((f"cropped{i}",cropped))
-            #osd = pytesseract.image_to_osd(cropped)
-            #cropped_deskewed = LicensePlateProcessor._deskew_image(cropped, osd)
-            #images.append((f"cropped_deskewed{i}",cropped_deskewed))
+            
             for psm_val in [1,3,7,11,13]:
                 text = pytesseract.image_to_string(cropped, config=f'-c tessedit_char_whitelist=QWERTYUIOPASDFGHJKLZXCVBNM1234567890 --psm {psm_val}')
                 if text.strip() != "":
