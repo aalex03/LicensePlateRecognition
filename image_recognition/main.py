@@ -11,6 +11,6 @@ licensePlates = ocr.LicensePlateProcessor.process(image,"canny",True)
 for plate in licensePlates:
     stripped_plate = plate.replace(" ","")
     if validator.LicensePlateValidator.validate(stripped_plate):
-        print(f"Found {stripped_plate.strip()}")
+        print(f"{stripped_plate.strip()}")
         break
 exit(0)

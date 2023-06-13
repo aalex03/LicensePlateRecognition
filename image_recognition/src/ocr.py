@@ -8,6 +8,8 @@ import pytesseract
 
 from PIL import Image
 
+import logging
+
 class LicensePlateProcessor:
     images = []
     def __init__(self) -> None:
@@ -183,7 +185,7 @@ class LicensePlateProcessor:
             contours = LicensePlateProcessor._haar_cascade(img,images)
         i = 0
         if len(contours) == 0:
-            print("no license plate found")
+            logging.debug("no license plate found")
             return [""]
         for c in contours:
             i = i+1
@@ -194,9 +196,9 @@ class LicensePlateProcessor:
             for psm_val in [1,3,7,11,13]:
                 text = pytesseract.image_to_string(cropped, config=f'-c tessedit_char_whitelist=QWERTYUIOPASDFGHJKLZXCVBNM1234567890 --psm {psm_val}')
                 if text.strip() != "":
-                    print(f"Text for crop {i}: {text.strip()} at psm {psm_val}")
+                    logging.debug(f"Text for crop {i}: {text.strip()} at psm {psm_val}")
                     plates.append(text.strip())
         if saveImages == True:
-            print("Saving images")
+            logging.debug("Saving images")
             LicensePlateProcessor._saveImages(images)
         return plates
