@@ -132,9 +132,45 @@ class LicensePlateProcessor:
         edged = cv2.Canny(blur, 30, 200) #Perform Edge detection
         contours = LicensePlateProcessor._findContours(edged)
         imgArray.append(("edged",edged))
-        cv2.drawContours(image, contours, -1, (0, 255, 0), 3)
+        cv2.drawContours(image, contours, -1, (0, 0, 0), 3)
         return contours
     
+    @staticmethod
+    def _deskew_image(image, osd_results):
+        # Extract the rotation angle from OSD results
+        rotation_angle = 0.0
+        lines = osd_results.strip().split('\n')
+        for line in lines:
+            if line.startswith('Rotate:'):
+                rotation_angle = float(line.split(':')[1])
+
+        # Deskew the image
+        if rotation_angle != 0.0:
+            # Convert the rotation angle to radians
+            angle_radians = np.radians(rotation_angle)
+
+            # Compute the image center
+            height, width = image.shape[:2]
+            center = (width // 2, height // 2)
+
+            # Perform the deskewing
+            rotation_matrix = cv2.getRotationMatrix2D(center, rotation_angle, 1.0)
+            deskewed_image = cv2.warpAffine(image, rotation_matrix, (width, height), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+
+            return deskewed_image
+
+        return image
+    @staticmethod
+    def _sharpen_image(image):
+        # Define the sharpening kernel
+        sharpening_kernel = np.array([[0, -1, 0],
+                                    [-1, 5, -1],
+                                    [0, -1, 0]])
+
+        # Apply the sharpening kernel using filter2D
+        sharpened_image = cv2.filter2D(image, -1, sharpening_kernel)
+
+        return sharpened_image
     @staticmethod
     def process(image : Image, option : str, saveImages : bool) -> list:
         
@@ -147,19 +183,23 @@ class LicensePlateProcessor:
             contours = LicensePlateProcessor._haar_cascade(img,images)
         i = 0
         if len(contours) == 0:
-            #print("no license plate found")
+            print("no license plate found")
             return [""]
         for c in contours:
             i = i+1
             cropped = LicensePlateProcessor._mask_and_crop(img,c)
-            cropped = cv2.bitwise_not(cropped)
+            #cropped = cv2.bitwise_not(cropped)
+            cropped = LicensePlateProcessor._sharpen_image(cropped)
             images.append((f"cropped{i}",cropped))
-            for psm_val in [3,7,9,13]:
+            #osd = pytesseract.image_to_osd(cropped)
+            #cropped_deskewed = LicensePlateProcessor._deskew_image(cropped, osd)
+            #images.append((f"cropped_deskewed{i}",cropped_deskewed))
+            for psm_val in [1,3,7,11,13]:
                 text = pytesseract.image_to_string(cropped, config=f'-c tessedit_char_whitelist=QWERTYUIOPASDFGHJKLZXCVBNM1234567890 --psm {psm_val}')
                 if text.strip() != "":
-                    #print(f"Text for crop {i}: {text.strip()} at psm {psm_val}")
+                    print(f"Text for crop {i}: {text.strip()} at psm {psm_val}")
                     plates.append(text.strip())
         if saveImages == True:
-            #print("Saving images")
+            print("Saving images")
             LicensePlateProcessor._saveImages(images)
         return plates

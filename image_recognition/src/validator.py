@@ -34,13 +34,17 @@ class LicensePlateValidator:
         num = string[judCount:judCount+numCount]
 
         identificator = string[judCount+numCount:]
+
+        #print(f"Judet: {jud}")
+        #print(f"Numar: {num}")
+        #print(f"Identificator: {identificator}")
         # handle B
         if jud == "B":
             if(len(num) not in [2,3,6]):  # B 123456, B 12 ABC, B 123 ABC
                 valid = False
             if(len(num) == 6 and len(identificator) != 0):  # B 123456 ABC
                 valid = False
-            if(len(num) !=6 and len(identificator) != 3):
+            if(len(num) !=6 and len(identificator) != 3 and identificator.isalpha()):
                 valid = False
         else:
             if(jud not in LicensePlateValidator.counties):
@@ -49,6 +53,6 @@ class LicensePlateValidator:
                 valid = False
             if(len(num) == 6 and len(identificator) != 0):
                 valid = False
-            if(len(num) !=6 and len(identificator) != 3):
+            if(len(num) !=6 and len(identificator) != 3 and identificator.isalpha()):
                 valid = False
         return valid

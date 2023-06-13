@@ -1,11 +1,11 @@
 from src import ocr
-#from src import camera as cam
+from src import camera as cam
 from PIL import Image
 from src import validator
-#image = cam.Camera.capture()
+image = cam.Camera.capture()
 #image = Image.open(".temp/nr.png")
-image = Image.open("data/logan_front.jpg")
-licensePlates = ocr.LicensePlateProcessor.process(image,"canny",False)
+#mage = Image.open("data/input.jpg")
+licensePlates = ocr.LicensePlateProcessor.process(image,"canny",True)
 #licensePlates.append(ocr.LicensePlateProcessor.process(image,"haar",True))
 
 for plate in licensePlates:
