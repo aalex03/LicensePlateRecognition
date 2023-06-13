@@ -175,7 +175,7 @@ class LicensePlateProcessor:
         return sharpened_image
     @staticmethod
     def process(image : Image, option : str, saveImages : bool) -> list:
-        
+        logging.basicConfig(level=logging.DEBUG)
         img = LicensePlateProcessor._convertPILtoCV2(image)
         images = []
         plates = []
