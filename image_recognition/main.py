@@ -11,15 +11,17 @@ else:
 
 licensePlates = ocr.LicensePlateProcessor.process(image,"canny",True)
 
-if(len(licensePlates)==0):
-    licensePlates.append(ocr.LicensePlateProcessor.process(image,"haar",True))
-if(len(licensePlates)==0):
-    print("No license plate found")
-    exit(1)
-    
 for plate in licensePlates:
     stripped_plate = plate.replace(" ","")
     if validator.LicensePlateValidator.validate(stripped_plate):
         print(f"{stripped_plate.strip()}")
-        break
-exit(0)
+        exit(0)
+
+licensePlates = ocr.LicensePlateProcessor.process(image,"haar",True)
+
+for plate in licensePlates:
+    stripped_plate = plate.replace(" ","")
+    if validator.LicensePlateValidator.validate(stripped_plate):
+        print(f"{stripped_plate.strip()}")
+        exit(0)
+exit(1)

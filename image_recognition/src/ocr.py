@@ -86,30 +86,6 @@ class LicensePlateProcessor:
         cropped = new_image[topx:bottomx+1, topy:bottomy+1]
 
         return cropped
-
-    @staticmethod
-    def deskew_image(image):
-        # Convert the image to grayscale
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
-        # Apply adaptive thresholding to create a binary image
-        _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-        
-        # Find contours in the binary image
-        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        # Find the largest contour (presumably the object of interest)
-        largest_contour = max(contours, key=cv2.contourArea)
-        
-        # Determine the orientation angle of the contour using the minimum area rectangle
-        _, _, angle = cv2.minAreaRect(largest_contour)
-        
-        # Rotate the image to deskew it
-        rows, cols = image.shape[:2]
-        rotation_matrix = cv2.getRotationMatrix2D((cols/2, rows/2), angle, 1)
-        deskewed_image = cv2.warpAffine(image, rotation_matrix, (cols, rows), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
-        
-        return deskewed_image
     
     @staticmethod
     def _haar_cascade(image,imgArray):
@@ -137,31 +113,6 @@ class LicensePlateProcessor:
         cv2.drawContours(image, contours, -1, (0, 0, 0), 3)
         return contours
     
-    @staticmethod
-    def _deskew_image(image, osd_results):
-        # Extract the rotation angle from OSD results
-        rotation_angle = 0.0
-        lines = osd_results.strip().split('\n')
-        for line in lines:
-            if line.startswith('Rotate:'):
-                rotation_angle = float(line.split(':')[1])
-
-        # Deskew the image
-        if rotation_angle != 0.0:
-            # Convert the rotation angle to radians
-            angle_radians = np.radians(rotation_angle)
-
-            # Compute the image center
-            height, width = image.shape[:2]
-            center = (width // 2, height // 2)
-
-            # Perform the deskewing
-            rotation_matrix = cv2.getRotationMatrix2D(center, rotation_angle, 1.0)
-            deskewed_image = cv2.warpAffine(image, rotation_matrix, (width, height), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
-
-            return deskewed_image
-
-        return image
     @staticmethod
     def _sharpen_image(image):
         # Define the sharpening kernel
