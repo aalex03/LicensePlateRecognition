@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <wiringPi.h>
-//#include <wiringSerial.h>
+#include <wiringPi.h>
+#include <wiringSerial.h>
 
 typedef enum {
     SETUP,
@@ -133,7 +133,7 @@ int main() {
                             sysState=CHECK_CAR;
                             sprintf(response, "Error occurred while checking the license plate in the database");
                         }
-                        printf("License plate check status: %s\n", response);
+                        printf("    License plate check status: %s\n", response);
                         
                 }                            
                 break;
