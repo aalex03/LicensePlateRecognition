@@ -107,7 +107,7 @@ int main() {
                 else if(receivedDataArduino=="EXT")
                         sysState=CHECK_BARRIER_EXIT;
                     else
-                        sysState=INIT;//Reading fault
+                        sysState=CHECK_CAR;//Car not present at barriers
                 break;
             case CHECK_BARRIER_ENTRY:
                 printf("System CHECK_BARRIER_ENTRY\n");
