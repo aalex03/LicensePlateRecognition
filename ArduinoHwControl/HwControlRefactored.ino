@@ -2,17 +2,17 @@
 #include<Wire.h>
 #include <Servo.h>
 #include <string.h>
-#define trigPin1 10
-#define echoPin1 11
+#define trigPin1 11
+#define echoPin1 10
+#define trigPin2 9
+#define echoPin2 8
 #define trigPin3 7
-#define echoPin3 8
-#define trigPin2 6
-#define echoPin2 5
-#define trigPin4 4
-#define echoPin4 3
+#define echoPin3 6
+#define trigPin4 5
+#define echoPin4 4
 #define LED_RED 13
 #define LED_GREEN 12
-#define servoEntrPin 9
+#define servoEntrPin 3
 #define servoExtPin 2
 #define BARRIER_DOWN 75
 #define BARRIER_RAISED 150
