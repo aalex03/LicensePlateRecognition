@@ -60,14 +60,29 @@ char *executePythonScript() {
 
 int checkLicensePlate(const char *licensePlate) {
     char command[256];
-    sprintf(command, "./database/check_entry %s", licensePlate);
+    char licensePlateCopy[256];
+    strcpy(licensePlateCopy, licensePlate);
+    
+    char *token = strtok(licensePlateCopy, "\n");  // Split the string by newline character
+    
+    while (token != NULL) {
+        sprintf(command, "./database/check_entry %s", token);
 
-    int status = system(command);
-    if (WIFEXITED(status)) {
-        int exit_status = WEXITSTATUS(status);
-        return exit_status;
+        int status = system(command);
+        if (WIFEXITED(status)) {
+            int exit_status = WEXITSTATUS(status);
+            printf("License Plate: %s, Exit Status: %d\n", token, exit_status);
+            // Add your desired logic based on the exit_status
+            if(exit_status == 1)
+            {
+                return exit_status;
+            }
+        }
+        
+        token = strtok(NULL, "\n");  // Get the next token
     }
-    return -1;  // Error occurred while executing the check_entry executable
+    
+    return 0;
 }
 
 int main() {
@@ -107,7 +122,7 @@ int main() {
                 else if(strcmp(receivedDataArduino,"EXT")==0)
                         sysState=CHECK_BARRIER_EXIT;
                     else
-                        sysState=INIT;//Reading fault
+                        sysState=CHECK_CAR;//Reading fault
                 break;
             case CHECK_BARRIER_ENTRY:
                 printf("System CHECK_BARRIER_ENTRY\n");

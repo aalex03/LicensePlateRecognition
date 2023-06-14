@@ -10,18 +10,22 @@ else:
     image = cam.Camera.capture()
 
 licensePlates = ocr.LicensePlateProcessor.process(image,"canny",True)
-
+validPlates = []
 for plate in licensePlates:
     stripped_plate = plate.replace(" ","")
     if validator.LicensePlateValidator.validate(stripped_plate):
-        print(f"{stripped_plate.strip()}")
-        exit(0)
+        if(stripped_plate not in validPlates):
+            validPlates.append(stripped_plate.strip())
+        
+if(len(validPlates) == 0):
+    licensePlates = ocr.LicensePlateProcessor.process(image,"haar",True)
+    for plate in licensePlates:
+        stripped_plate = plate.replace(" ","")
+        if validator.LicensePlateValidator.validate(stripped_plate):
+            if(stripped_plate not in validPlates):
+                validPlates.append(stripped_plate.strip())
 
-licensePlates = ocr.LicensePlateProcessor.process(image,"haar",True)
-
-for plate in licensePlates:
-    stripped_plate = plate.replace(" ","")
-    if validator.LicensePlateValidator.validate(stripped_plate):
-        print(f"{stripped_plate.strip()}")
-        exit(0)
+if len(validPlates) > 0:
+    for plate in validPlates:
+            print(plate)
 exit(1)
