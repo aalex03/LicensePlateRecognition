@@ -179,6 +179,7 @@ class LicensePlateProcessor:
         img = LicensePlateProcessor._convertPILtoCV2(image)
         images = []
         plates = []
+        images.append(("original",img))
         if option == "canny":
             contours = LicensePlateProcessor._canny_detection(img,images)
         elif option == "haar":
@@ -186,7 +187,8 @@ class LicensePlateProcessor:
         i = 0
         if len(contours) == 0:
             logging.debug("no license plate found")
-            return [""]
+            LicensePlateProcessor._saveImages(images)
+            return []
         for c in contours:
             i = i+1
             cropped = LicensePlateProcessor._mask_and_crop(img,c)

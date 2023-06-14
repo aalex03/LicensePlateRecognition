@@ -54,7 +54,6 @@ char *executePythonScript() {
 int checkLicensePlate(const char *licensePlate) {
     char command[256];
     sprintf(command, "./database/check_entry %s", licensePlate);
-
     int status = system(command);
     if (WIFEXITED(status)) {
         int exit_status = WEXITSTATUS(status);
@@ -96,9 +95,9 @@ int main() {
                 int exit_status = checkLicensePlate(licensePlate);
 
                 char response[256];
-                if (exit_status == 1) {
+                if (exit_status == 0) {
                     sprintf(response, "License plate found in the database");
-                } else if (exit_status == 0) {
+                } else if (exit_status == 1) {
                     sprintf(response, "License plate not found in the database");
                 } else {
                     sprintf(response, "Error occurred while checking the license plate in the database");

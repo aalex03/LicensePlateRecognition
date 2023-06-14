@@ -9,7 +9,7 @@ class Camera:
     def capture() -> Image:
         camera = picamera.PiCamera()
         stream = BytesIO()
-        sleep(5)
+        sleep(3)
         camera.capture(stream,format="png")
         image = Image.open(stream)
         image = image.convert("RGB")
