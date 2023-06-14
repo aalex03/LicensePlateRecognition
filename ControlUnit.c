@@ -102,9 +102,9 @@ int main() {
                 sprintf(opcode,"CHECK_CAR");
                 sendToArduino(opcode);
                 receiveFromArduino(receivedDataArduino,sizeof(receivedDataArduino));
-                if(receivedDataArduino=="ENT")
+                if(strcmp(receivedDataArduino,"ENT")==0)
                     sysState=CHECK_BARRIER_ENTRY;
-                else if(receivedDataArduino=="EXT")
+                else if(strcmp(receivedDataArduino,"EXT")==0)
                         sysState=CHECK_BARRIER_EXIT;
                     else
                         sysState=INIT;//Reading fault
@@ -114,9 +114,9 @@ int main() {
                 sprintf(opcode,"CHECK_BARRIER_ENTRY");
                 sendToArduino(opcode);
                 receiveFromArduino(receivedDataArduino,sizeof(receivedDataArduino));
-                if(receivedDataArduino=="TAKE_PHOTO_0")
+                if(strcmp(receivedDataArduino,"TAKE_PHOTO_0")==0)
                     sysState=CHECK_CAR;
-                else if(receivedDataArduino=="TAKE_PHOTO_1"){
+                else if(strcmp(receivedDataArduino,"TAKE_PHOTO_1")==0){
                         char *licensePlate = executePythonScript();// should take the picture first to process and then run the algorithm?
                         int exit_status = checkLicensePlate(licensePlate);
                         char response[256];
@@ -142,9 +142,9 @@ int main() {
                 sprintf(opcode,"CHECK_BARRIER_EXIT");
                 sendToArduino(opcode);
                 receiveFromArduino(receivedDataArduino,sizeof(receivedDataArduino));
-                if(receivedDataArduino=="CAR_EXIT_1")
+                if(strcmp(receivedDataArduino,"CAR_EXIT_1"))
                     sysState=OPENGATE_EXT;
-                    else if(receivedDataArduino=="CAR_EXIT_0")
+                    else if(strcmp(receivedDataArduino,"CAR_EXIT_0"))
                     sysState=CHECK_CAR; 
                     else
                     sysState=CHECK_CAR;
@@ -163,9 +163,9 @@ int main() {
                 sprintf(opcode,"OPENGATE_ENT");
                 sendToArduino(opcode);
                 receiveFromArduino(receivedDataArduino,sizeof(receivedDataArduino));
-                if(receivedDataArduino=="LEFT_PARKING")
+                if(strcmp(receivedDataArduino,"LEFT_PARKING"))
                     sysState=INIT;
-                    else if (receivedDataArduino=="ENTERED_PARKING")
+                    else if (strcmp(receivedDataArduino,"ENTERED_PARKING"))
                         sysState=COUNTER;
                         else
                         sysState=OPENGATE_ENT;//car in fron of barrier, did not enter or leave 
@@ -175,9 +175,9 @@ int main() {
                 sprintf(opcode,"OPENGATE_EXT");
                 sendToArduino(opcode);
                 receiveFromArduino(receivedDataArduino,sizeof(receivedDataArduino));
-                if(receivedDataArduino=="RETURNED_PARKING")
+                if(strcmp(receivedDataArduino,"RETURNED_PARKING"))
                     sysState=INIT;
-                    else if (receivedDataArduino=="EXITED_PARKING")
+                    else if (strcmp(receivedDataArduino,"EXITED_PARKING"))
                         sysState=COUNTER;
                         else
                         sysState=OPENGATE_EXT;//car in fron of barrier, did not enter or leave 
