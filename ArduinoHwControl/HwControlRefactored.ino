@@ -75,19 +75,19 @@ void Init(){
 
 }
 void CheckCar(){
-
+    transmitData("ENT");
 }
 void CheckBarrierEntry(){
-    
+    transmitData("TAKE_PHOTO_1");  
 }
 void CheckBarrierExit(){
-    
+    transmitData("CAR_EXIT_1");      
 }
 void OpengateEntry(){
-    
+    transmitData("ENTERED_PARKING");      
 }
 void OpengateExit(){
-    
+    transmitData("EXITED_PARKING");       
 }
 void Display(){
 
@@ -103,7 +103,8 @@ void transmitData(String data) {
 
 void processMessage(String message) {
   //String opcode = message.substring(0, message.indexOf(':'));
-  String opcode=message;
+  char opcode[256];
+  sprintf(opcode,"%s",message);
 
     if (strcmp(opcode,"SETUP")) 
      SetupRequested=true;
