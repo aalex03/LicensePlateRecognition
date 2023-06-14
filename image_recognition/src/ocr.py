@@ -146,7 +146,7 @@ class LicensePlateProcessor:
             cropped = LicensePlateProcessor._sharpen_image(cropped)
             images.append((f"cropped{i}",cropped))
             
-            for psm_val in [1,3,7,11,13]:
+            for psm_val in [1,3,5,7,8,11,13]:
                 text = pytesseract.image_to_string(cropped, config=f'-c tessedit_char_whitelist=QWERTYUIOPASDFGHJKLZXCVBNM1234567890 --psm {psm_val}')
                 if text.strip() != "":
                     logging.debug(f"Text for crop {i}: {text.strip()} at psm {psm_val}")
