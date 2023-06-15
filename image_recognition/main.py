@@ -2,6 +2,7 @@ from src import ocr
 from src import camera as cam
 from PIL import Image
 from src import validator
+import cv2
 import sys
 
 if(len(sys.argv)>1):

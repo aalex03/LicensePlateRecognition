@@ -3,6 +3,7 @@
 #include <string.h>
 #include <wiringPi.h>
 #include <wiringSerial.h>
+#include <unistd.h>
 
 typedef enum {
     SETUP,
@@ -99,6 +100,7 @@ int main() {
 
     static States sysState = SETUP,sysStatePrev=SETUP;
     while (1) {
+        sleep(1);
         switch (sysState) {
             case SETUP:
                 printf("System SETUP\n");
@@ -117,6 +119,7 @@ int main() {
                 sprintf(opcode,"CHECK_CAR");
                 sendToArduino(opcode);
                 receiveFromArduino(receivedDataArduino,sizeof(receivedDataArduino));
+                printf("Received data from Arduino: %s\n", receivedDataArduino);
                 if(strcmp(receivedDataArduino,"ENT")==0)
                     sysState=CHECK_BARRIER_ENTRY;
                 else if(strcmp(receivedDataArduino,"EXT")==0)
