@@ -107,6 +107,9 @@ void processMessage(String opcode) {
   //sprintf(opcode,"%s",message);
   //Serial.println(opcode);
   //Serial.println(message);
+
+    print_lcd_line(opcode, 0, 0);
+   //lcd.clear();
     if (!strcmp(opcode.c_str(),"SETUP")) 
      SetupRequested=true;
     if (!strcmp(opcode.c_str(),"INIT")) 
@@ -180,6 +183,16 @@ void TrafficLights_OFF()
   digitalWrite(LED_GREEN, LOW);
 }
 
+byte print_lcd_line(String str_in, byte disp_row, byte disp_col) {
+  byte lcd_fault = 0x00; //default
+  if (!(disp_row < 20 && disp_col < 4))
+    lcd_fault = 0x01;
+  else {
+    lcd.setCursor(disp_row, disp_col);
+    lcd.print(str_in);
+  }
+  return lcd_fault;
+}
 void loop(){
     if(Serial.available()){
         String receivedData=Serial.readStringUntil('\n');
