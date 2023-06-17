@@ -101,28 +101,32 @@ void transmitData(String data) {
   Serial.println(data);
 }
 
-void processMessage(String message) {
+void processMessage(String opcode) {
   //String opcode = message.substring(0, message.indexOf(':'));
-  char opcode[256];
-  sprintf(opcode,"%s",message);
+  //char opcode[256];
+  //sprintf(opcode,"%s",message);
+  //Serial.println(opcode);
+  //Serial.println(message);
 
-    if (strcmp(opcode,"SETUP")) 
+    print_lcd_line(opcode, 0, 0);
+   //lcd.clear();
+    if (!strcmp(opcode.c_str(),"SETUP")) 
      SetupRequested=true;
-    if (strcmp(opcode,"INIT")) 
+    if (!strcmp(opcode.c_str(),"INIT")) 
      InitRequested=true;
-    if (strcmp(opcode,"CHECK_CAR")) 
+    if (!strcmp(opcode.c_str(),"CHECK_CAR")) // if (opcode.equals("CHECK_CAR"))
      CheckCarRequested=true;
-    if (strcmp(opcode,"CHECK_BARRIER_ENTRY"))  
+    if (!strcmp(opcode.c_str(),"CHECK_BARRIER_ENTRY"))  
      CheckBarrierEntryRequested=true;
-    if (strcmp(opcode,"CHECK_BARRIER_EXIT")) 
+    if (!strcmp(opcode.c_str(),"CHECK_BARRIER_EXIT")) 
      CheckBarrierExitRequested=true;
-    if (strcmp(opcode,"OPENGATE_ENT")) 
+    if (!strcmp(opcode.c_str(),"OPENGATE_ENT")) 
      OpengateEntryRequested=true;
-    if (strcmp(opcode,"OPENGATE_EXT")) 
+    if (!strcmp(opcode.c_str(),"OPENGATE_EXT")) 
      OpengateExitRequested=true;
-    if (strcmp(opcode,"DISPLAY")) 
+    if (!strcmp(opcode.c_str(),"DISPLAY")) 
      DisplayRequested=true;
-    if (strcmp(opcode,"COUNTER")) 
+    if (!strcmp(opcode.c_str(),"COUNTER")) 
      CounterRequested=true;
   
 }
@@ -179,6 +183,16 @@ void TrafficLights_OFF()
   digitalWrite(LED_GREEN, LOW);
 }
 
+byte print_lcd_line(String str_in, byte disp_row, byte disp_col) {
+  byte lcd_fault = 0x00; //default
+  if (!(disp_row < 20 && disp_col < 4))
+    lcd_fault = 0x01;
+  else {
+    lcd.setCursor(disp_row, disp_col);
+    lcd.print(str_in);
+  }
+  return lcd_fault;
+}
 void loop(){
     if(Serial.available()){
         String receivedData=Serial.readStringUntil('\n');
