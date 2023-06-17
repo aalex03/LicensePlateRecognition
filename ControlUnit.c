@@ -164,8 +164,10 @@ int main()
                 setSysState(&sysState, &sysStatePrev, CHECK_BARRIER_ENTRY);
             else if (strcmp(receivedDataArduino, "EXT") == 0)
                 setSysState(&sysState, &sysStatePrev, CHECK_BARRIER_EXIT);
-            else
+            else if(strcmp(receivedDataArduino,"NO_CAR_DETECTED")==0)
                 setSysState(&sysState, &sysStatePrev, CHECK_CAR); // Car not present at barriers
+			else
+				setSysState(&sysState, &sysStatePrev, CHECK_CAR);//Fault at communication, retrying
             break;
         case CHECK_BARRIER_ENTRY:
             printf("System CHECK_BARRIER_ENTRY\n");
