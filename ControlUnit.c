@@ -4,6 +4,8 @@
 #include <wiringPi.h>
 #include <wiringSerial.h>
 #include <unistd.h>
+#include <stdbool.h>
+#include <ctype.h>
 
 typedef enum
 {
@@ -32,6 +34,12 @@ void setSysState(States *sysState, States *prevState, States newState)
     *sysState = newState;
 }
 
+void sleep_ms(unsigned int milliseconds) {
+    unsigned int microseconds = milliseconds * 1000;
+
+    usleep(microseconds);
+}
+
 void receiveFromArduino(char *buffer, int buffer_size)
 {
     int index = 0;
@@ -43,12 +51,11 @@ void receiveFromArduino(char *buffer, int buffer_size)
         {
             // Wait for data to be received
             puts("No data on serial");
-            sleep(1);
+            sleep_ms(500);
         }
 
         // Read the character from serial
         char data = serialGetchar(serial);
-        printf("%c", data);
         // Store the character in the buffer
         *buffer = data;
         buffer++;
@@ -90,14 +97,35 @@ char *executePythonScript()
     return output;
 }
 
+
+bool isNullOrWhitespace(const char* str) {
+    if (str == NULL) {
+        return true; // String is null
+    }
+
+    while (*str != '\0') {
+        if (!isspace((unsigned char)*str)) {
+            return false; // Non-whitespace character found
+        }
+        str++;
+    }
+
+    return true; // String consists of only whitespace characters
+}
+
 int checkLicensePlate(const char *licensePlate)
 {
     char command[256];
+    if(isNullOrWhitespace(licensePlate))
+    {
+        printf("License plate is null or whitespace\n");
+        return 1;
+    }
+
     char licensePlateCopy[256];
     strcpy(licensePlateCopy, licensePlate);
 
     char *token = strtok(licensePlateCopy, "\n"); // Split the string by newline character
-
     while (token != NULL)
     {
         sprintf(command, "./database/check_entry %s", token);
@@ -138,7 +166,7 @@ int main()
     static States sysState = SETUP, sysStatePrev = SETUP;
     while (1)
     {
-        sleep(1);
+        sleep_ms(500);
         switch (sysState)
         {
         case SETUP:
@@ -175,7 +203,7 @@ int main()
             sendToArduino(opcode);
             receiveFromArduino(receivedDataArduino, sizeof(receivedDataArduino));
             if (strcmp(receivedDataArduino, "TAKE_PHOTO_0") == 0)
-                setSysState(&sysState, &sysStatePrev, CHECK_CAR);
+                setSysState(&sysState, &sysStatePrev, INIT);
             else if (strcmp(receivedDataArduino, "TAKE_PHOTO_1") == 0)
             {
                 char *licensePlate = executePythonScript(); // should take the picture first to process and then run the algorithm?
@@ -205,9 +233,9 @@ int main()
             sendToArduino(opcode);
             sleep(2);
             receiveFromArduino(receivedDataArduino, sizeof(receivedDataArduino));
-            if (strcmp(receivedDataArduino, "CAR_EXIT_1"))
+            if (strcmp(receivedDataArduino, "CAR_EXIT_1") == 0)
                 setSysState(&sysState, &sysStatePrev, OPENGATE_EXT);
-            else if (strcmp(receivedDataArduino, "CAR_EXIT_0"))
+            else if (strcmp(receivedDataArduino, "CAR_EXIT_0") == 0)
                 setSysState(&sysState, &sysStatePrev, CHECK_CAR);
             else
                 setSysState(&sysState, &sysStatePrev, CHECK_CAR);
