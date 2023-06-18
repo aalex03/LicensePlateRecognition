@@ -22,8 +22,10 @@
 #define DIST_SPIKE_FILTER 100
 #define BOTTOM_DIST_TRESH 2
 #define TOP_DIST_TRESH 20
-#define CAR_PRESENT_ENT 1
-#define CAR_PRESENT_EXT 2
+#define CAR_PRESENT_ENT_S1 1
+#define CAR_PRESENT_EXT_S1 2
+#define CAR_PRESENT_ENT_S2 3
+#define CAR_PRESENT_EXT_S2 4
 #define BOTTOM_PHOTO_TRESH 10
 #define TOP_PHOTO_TRESH 15 // use 12,13 in real time
 #define CAR_ENTERED_PARKING 0x01
@@ -79,6 +81,11 @@ void setup()
   lcd.backlight();
   Serial.begin(9600);
   TrafficLights_OFF();
+  str_l0 = "Team Rocket Parking";
+  str_l1 = "Locuri libere: " + String(park_cnt);
+  str_l2 = "Orar parcare 06-23";
+  str_l3 = "Bine ati venit!";
+  print_to_lcd();
 }
 void setup_main()
 {
@@ -107,21 +114,33 @@ void Init()
   state_ext = 0x00;
   trafficLightsON = false;
   CounterStatus = 0x00;
+  car_in_front_of_entry_servo_barrier = false;
+  car_in_front_of_ext_servo_barrier = false;
+  car_in_back_of_entry_servo_barrier = false;
+  car_in_back_of_ext_servo_barrier = false;
 }
-void CheckCar()
-{
-  byte car_present_ent_val = 0x00, car_present_ext_val = 0x00;
+void CheckCar() {
+  byte car_present_ent_s1_val = 0x00, car_present_ext_s1_val = 0x00, car_present_ent_s2_val = 0x00, car_present_ext_s2_val = 0x00;
 
-  car_present_ent_val = check_car_detect(getSensorDistance(trigPin1, echoPin1), BOTTOM_DIST_TRESH, TOP_DIST_TRESH, ENTR_SERVO);
-  car_present_ext_val = check_car_detect(getSensorDistance(trigPin3, echoPin3), BOTTOM_DIST_TRESH, TOP_DIST_TRESH, EXT_SERVO);
-  // Serial.print("CAR_ent: ");Serial.println(car_present_ent_val);
-  //  Serial.print("CAR_ext: ");Serial.println(car_present_ext_val);
-  if (car_present_ent_val == CAR_PRESENT_ENT)
-  {
+  car_present_ent_s1_val = check_car_detect(trigPin1, echoPin1, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, ENTR_SERVO);
+  car_present_ent_s2_val = check_car_detect(trigPin3, echoPin3, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, EXT_SERVO);
+  car_present_ext_s1_val = check_car_detect(trigPin2, echoPin2, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, ENTR_SERVO);
+  car_present_ext_s2_val = check_car_detect(trigPin4, echoPin4, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, EXT_SERVO);
+#if false
+  Serial.print("car_in_front_of_entry_servo_barrier:"); Serial.print(car_in_front_of_entry_servo_barrier);
+  Serial.print(" car_in_back_of_entry_servo_barrier:"); Serial.println(car_in_back_of_entry_servo_barrier);
+  Serial.print("car_in_front_of_ext_servo_barrier:"); Serial.print(car_in_front_of_ext_servo_barrier);
+  Serial.print(" car_in_back_of_ext_servo_barrier:"); Serial.println(car_in_back_of_ext_servo_barrier);
+  Serial.println();
+  Serial.println();
+#endif
+  //Serial.print("CAR_ent: ");Serial.println(car_present_ent_val);
+  // Serial.print("CAR_ext: ");Serial.println(car_present_ext_val);
+  if (car_present_ent_s1_val == CAR_PRESENT_ENT_S1) {
     transmitData("ENT");
   }
-  else if (car_present_ext_val == CAR_PRESENT_EXT)
-  {
+  else if (car_present_ent_s2_val == CAR_PRESENT_ENT_S2) {
+
     transmitData("EXT");
   }
   else
@@ -135,15 +154,16 @@ void CheckBarrierEntry()
     transmitData("TAKE_PHOTO_1");
     state_entr = 1;
     trafficLightsON = true;
-  }
-  else
-  {
+  } else {
     if (park_cnt < 1)
       parking_full_flag = true;
     transmitData("TAKE_PHOTO_0");
   }
 
-  // Update display line
+  //Update display line
+  str_l0 = "Team Rocket Parking";
+  str_l1 = "Locuri libere: " + String(park_cnt);
+  str_l2 = "Orar parcare 06-23";
   if (state_entr == 1)
     str_l3 = "ACCES PERMIS!";
   if (access_denied_flag == 1)
@@ -162,22 +182,24 @@ void OpengateEntry()
 {
   long dist1_val, dist2_val;
   moveServo(BARRIER_RAISED, ENTR_SERVO);
-  while (car_in_back_of_entry_servo_barrier != true)
-  { // wait for car to enter or leave
+  while (car_in_back_of_entry_servo_barrier != true) { // wait for car to enter or leave
+#if false
     dist1_val = getSensorDistance(trigPin1, echoPin1);
     dist2_val = getSensorDistance(trigPin2, echoPin2);
 
-    if (dist2_val >= BOTTOM_DIST_TRESH && dist2_val <= TOP_DIST_TRESH)
-    {
+    if (dist2_val >= BOTTOM_DIST_TRESH && dist2_val <= TOP_DIST_TRESH) {
       car_in_back_of_entry_servo_barrier = true;
     }
-    else
-    {
+    else {
       car_in_back_of_entry_servo_barrier = false;
     }
+#endif
+    check_car_detect(trigPin1, echoPin1, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, ENTR_SERVO);
+    check_car_detect(trigPin3, echoPin3, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, EXT_SERVO);
+    check_car_detect(trigPin2, echoPin2, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, ENTR_SERVO);
+    check_car_detect(trigPin4, echoPin4, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, EXT_SERVO);
   }
-  if (car_in_back_of_entry_servo_barrier)
-  {
+  if (car_in_back_of_entry_servo_barrier) {
     transmitData("ENTERED_PARKING");
     CounterStatus = CAR_ENTERED_PARKING;
   }
@@ -185,32 +207,37 @@ void OpengateEntry()
     transmitData("LEFT_PARKING");
   moveServo(BARRIER_DOWN, ENTR_SERVO);
 }
-void OpengateExit()
-{
+void OpengateExit() {
   long dist3_val, dist4_val;
   moveServo(BARRIER_RAISED, EXT_SERVO);
-  while (car_in_back_of_ext_servo_barrier != true)
-  { // wait for car to enter or leave
+  while (car_in_back_of_ext_servo_barrier != true) { // wait for car to enter or leave
+#if false
     dist3_val = getSensorDistance(trigPin3, echoPin3);
     dist4_val = getSensorDistance(trigPin4, echoPin4);
 
-    if (dist4_val >= BOTTOM_DIST_TRESH && dist4_val <= TOP_DIST_TRESH)
-    {
+    if (dist4_val >= BOTTOM_DIST_TRESH && dist4_val <= TOP_DIST_TRESH) {
       car_in_back_of_ext_servo_barrier = true;
     }
-    else
-    {
+    else {
       car_in_back_of_ext_servo_barrier = false;
     }
+#endif
+    check_car_detect(trigPin1, echoPin1, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, ENTR_SERVO);
+    check_car_detect(trigPin3, echoPin3, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, EXT_SERVO);
+    check_car_detect(trigPin2, echoPin2, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, ENTR_SERVO);
+    check_car_detect(trigPin4, echoPin4, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, EXT_SERVO);
   }
-  if (car_in_back_of_ext_servo_barrier)
-  {
+  if (car_in_back_of_ext_servo_barrier) {
+
     transmitData("EXITED_PARKING");
     CounterStatus = CAR_EXITED_PARKING;
   }
   else
     transmitData("RETURNED_PARKING");
   moveServo(BARRIER_DOWN, EXT_SERVO);
+
+
+
 }
 void Display()
 {
@@ -220,21 +247,21 @@ void Display()
   else
     TrafficLights_OFF();
 }
-void Counter()
-{
-  if (CounterStatus == CAR_ENTERED_PARKING)
-  {
+
+void Counter() {
+  if (CounterStatus == CAR_ENTERED_PARKING) {
+
     if (park_cnt > 0)
       park_cnt--;
   }
   else if (CounterStatus == CAR_EXITED_PARKING)
     if (park_cnt < MAX_CNT_PARK)
       park_cnt++;
-  Serial.print("CntStatus:");
-  Serial.print(CounterStatus);
-  Serial.print("Cnt:");
-  Serial.print(park_cnt);
+
+  //Serial.print("CntStatus:"); Serial.print(CounterStatus); Serial.print("Cnt:"); Serial.print(park_cnt);
+  str_l0 = "Team Rocket Parking";
   str_l1 = "Locuri libere: " + String(park_cnt);
+  str_l2 = "Orar parcare 06-23";
   str_l3 = "Bine ati venit!";
   trafficLightsON = false;
 }
@@ -392,28 +419,42 @@ void print_to_lcd()
   }
 #endif
 }
-byte check_car_detect(long distance_in, const byte lower_tresh, const byte upper_tresh, byte servo_id)
-{
+byte check_car_detect(int trigPin, int echoPin, const byte lower_tresh, const byte upper_tresh, byte servo_id ) {
   byte check_flag = 0x00;
-  if (distance_in >= lower_tresh && distance_in <= upper_tresh)
-  {
-    if (servo_id == ENTR_SERVO)
-    {
-      check_flag = CAR_PRESENT_ENT; // ENT signal
-      car_in_front_of_entry_servo_barrier = true;
+  long distance_in = getSensorDistance(trigPin, echoPin);
+  if (distance_in >= lower_tresh && distance_in <= upper_tresh) {
+    if (servo_id == ENTR_SERVO) {
+      if (trigPin == trigPin1 && echoPin == echoPin1) {
+        check_flag = CAR_PRESENT_ENT_S1; //ENT signal
+        car_in_front_of_entry_servo_barrier = true;
+      } else if (trigPin == trigPin2 && echoPin == echoPin2) {
+        check_flag = CAR_PRESENT_EXT_S1;
+        car_in_back_of_entry_servo_barrier = true;
+      }
     }
-    else if (servo_id == EXT_SERVO)
-    {
-      check_flag = CAR_PRESENT_EXT; // EXT signal
-      car_in_front_of_ext_servo_barrier = true;
+    else if (servo_id == EXT_SERVO) {
+      if (trigPin == trigPin3 && echoPin == echoPin3) {
+        check_flag = CAR_PRESENT_ENT_S2; //EXT signal
+        car_in_front_of_ext_servo_barrier = true;
+      } else if (trigPin == trigPin4 && echoPin == echoPin4) {
+        check_flag = CAR_PRESENT_EXT_S2;
+        car_in_back_of_ext_servo_barrier = true;
+      }
     }
-  }
-  else
-  {
-    if (servo_id == ENTR_SERVO)
-      car_in_front_of_entry_servo_barrier = false;
-    else if (servo_id == EXT_SERVO)
-      car_in_front_of_ext_servo_barrier = false;
+  } else {
+    if (servo_id == ENTR_SERVO) {
+      if (trigPin == trigPin1 && echoPin == echoPin1)
+        car_in_front_of_entry_servo_barrier = false;
+      else if (trigPin == trigPin2 && echoPin == echoPin2)
+        car_in_back_of_entry_servo_barrier = false;
+
+    } else if (servo_id == EXT_SERVO) {
+      if (trigPin == trigPin3 && echoPin == echoPin3)
+        car_in_front_of_ext_servo_barrier = false;
+      else if (trigPin == trigPin4 && echoPin == echoPin4)
+        car_in_back_of_ext_servo_barrier = false;
+    }
+
   }
   return check_flag;
 }
