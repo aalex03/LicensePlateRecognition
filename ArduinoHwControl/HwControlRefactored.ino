@@ -34,7 +34,7 @@ int pos = 0;
 int park_cnt = 5;
 long dist_entr = 0, dist_ext = 0;
 String str, str_l0, str_l1, str_l2, str_l3;
-String LicenseNumber="";
+String LicenseNumber = "";
 bool Number_Valid = true;
 bool car_in_front_of_entry_servo_barrier = false, car_in_front_of_ext_servo_barrier = false;
 bool car_in_back_of_entry_servo_barrier = false, car_in_back_of_ext_servo_barrier = false;
@@ -46,8 +46,8 @@ byte display_print_cnt = 0;
 const byte display_print_cnt_max = 10;
 bool trafficLightsON = false;
 byte CounterStatus = 0x00;
-bool photo_taken_flag=false;
-bool LicenseNumberValid=false;
+bool photo_taken_flag = false;
+bool LicenseNumberValid = false;
 Servo servo_entr, servo_ext;
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
@@ -110,8 +110,8 @@ void setup_main() {
 //Main functions of the control routine
 void Init() {
   TrafficLights_OFF();
-  if(photo_taken_flag==true)
-        str_l3 = "ACCES RESPINS!";
+  if (photo_taken_flag == true)
+    str_l3 = "ACCES RESPINS!";
   print_to_lcd();//temp hack, to update states in main CU later
   access_denied_flag = 0x00;
   parking_full_flag = 0x00;
@@ -123,7 +123,7 @@ void Init() {
   car_in_front_of_ext_servo_barrier = false;
   car_in_back_of_entry_servo_barrier = false;
   car_in_back_of_ext_servo_barrier = false;
-  photo_taken_flag=true;
+  photo_taken_flag = true;
 }
 void CheckCar() {
   byte car_present_ent_s1_val = 0x00, car_present_ext_s1_val = 0x00, car_present_ent_s2_val = 0x00, car_present_ext_s2_val = 0x00;
@@ -132,16 +132,18 @@ void CheckCar() {
   car_present_ent_s2_val = check_car_detect(trigPin3, echoPin3, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, EXT_SERVO);
   car_present_ext_s1_val = check_car_detect(trigPin2, echoPin2, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, ENTR_SERVO);
   car_present_ext_s2_val = check_car_detect(trigPin4, echoPin4, BOTTOM_DIST_TRESH, TOP_DIST_TRESH, EXT_SERVO);
-#if false
-  Serial.print("car_in_front_of_entry_servo_barrier:"); Serial.print(car_in_front_of_entry_servo_barrier);
-  Serial.print(" car_in_back_of_entry_servo_barrier:"); Serial.println(car_in_back_of_entry_servo_barrier);
-  Serial.print("car_in_front_of_ext_servo_barrier:"); Serial.print(car_in_front_of_ext_servo_barrier);
-  Serial.print(" car_in_back_of_ext_servo_barrier:"); Serial.println(car_in_back_of_ext_servo_barrier);
-  Serial.println();
-  Serial.println();
-#endif
-  //Serial.print("CAR_ent: ");Serial.println(car_present_ent_val);
-  // Serial.print("CAR_ext: ");Serial.println(car_present_ext_val);
+  /*
+    #if false
+    Serial.print("car_in_front_of_entry_servo_barrier:"); Serial.print(car_in_front_of_entry_servo_barrier);
+    Serial.print(" car_in_back_of_entry_servo_barrier:"); Serial.println(car_in_back_of_entry_servo_barrier);
+    Serial.print("car_in_front_of_ext_servo_barrier:"); Serial.print(car_in_front_of_ext_servo_barrier);
+    Serial.print(" car_in_back_of_ext_servo_barrier:"); Serial.println(car_in_back_of_ext_servo_barrier);
+    Serial.println();
+    Serial.println();
+    #endif
+    //Serial.print("CAR_ent: ");Serial.println(car_present_ent_val);
+    // Serial.print("CAR_ext: ");Serial.println(car_present_ext_val);
+  */
   if (car_present_ent_s1_val == CAR_PRESENT_ENT_S1) {
     transmitData("ENT");
   }
@@ -151,13 +153,15 @@ void CheckCar() {
   else
     transmitData("NO_CAR_DETECTED");
 
+
 }
 void CheckBarrierEntry() {
   long dist_check = getSensorDistance(trigPin1, echoPin1);
   if (car_in_back_of_entry_servo_barrier == false && park_cnt > 0 && dist_check >= BOTTOM_PHOTO_TRESH && dist_check <= TOP_PHOTO_TRESH) {
     blink_red_led();
     transmitData("TAKE_PHOTO_1");
-    photo_taken_flag=true;
+    if (LicenseNumberValid)
+      photo_taken_flag = true;
     state_entr = 1;
     trafficLightsON = true;
   } else {
@@ -243,15 +247,22 @@ void OpengateExit() {
 void Display() {
   str_l0 = "Team Rocket Parking";
   str_l1 = "Locuri libere: " + String(park_cnt);
+  str_l2 = "Orar parcare 06-23";
 
-  
-  if(LicenseNumberValid)
-  str_l2 = "Nr. inmat: "+LicenseNumber;
-  else{
-  str_l2 = "Nr. inmat invalid";
-  str_l3 = "ACCES RESPINS!";
+  if (photo_taken_flag) {
+    str_l2 = "Nr. inmat: " + LicenseNumber;
+    photo_taken_flag = false;
   }
-  
+
+  if (!LicenseNumberValid) {
+    str_l2 = "Nr. inmat invalid";
+    str_l3 = "ACCES RESPINS!";
+  }
+  if (photo_taken_flag) {
+    str_l2 = "Nr. inmat: " + LicenseNumber;
+    photo_taken_flag = false;
+  }
+
   print_to_lcd();
   if (trafficLightsON == true)
     TrafficLights_ON();
@@ -273,58 +284,62 @@ void Counter() {
   str_l3 = "Bine ati venit!";
   trafficLightsON = false;
 }
-void LicenseRead(){
-  LicenseNumberValid=true;
+void LicenseRead() {
+  LicenseNumberValid = true;
 }
-void LicenseInvalid(){
-  LicenseNumberValid=false;
+void LicenseInvalid() {
+  LicenseNumberValid = false;
 }
 
 //Communication interfaces
 void transmitData(String data) {
 
-  //print_lcd_line(data, 0, 1);//good for debugging signals
+  // print_lcd_line(data, 0, 0);//good for debugging signals
   Serial.println(data);
 }
 
-void processMessage(String opcode) {
+void processMessage(String message) {
   //String opcode = message.substring(0, message.indexOf(':'));
   //char opcode[256];
   //sprintf(opcode,"%s",message);
   //Serial.println(opcode);
   //Serial.println(message);
   //good for debugging signals
+  String temp;
+  char opcode_license[30];
+  char opcode[30];
+  message.toCharArray(opcode, sizeof(opcode));
   //lcd.clear();
-  // print_lcd_line(opcode, 0, 0);
-  String opcode_license;
-  strncpy(opcode_license.c_str(),opcode.c_str(),8);
-  opcode_license[8]='\0';
- 
-  if (!strcmp(opcode.c_str(), "SETUP"))
+  //print_lcd_line(opcode, 0, 1);
+  strncpy(opcode_license, opcode, 8);
+  opcode_license[8] = '\0';
+
+  //print_lcd_line(opcode, 0, 2);
+  if (!strcmp(opcode, "SETUP"))
     SetupRequested = true;
-  if (!strcmp(opcode.c_str(), "INIT"))
+  if (!strcmp(opcode, "INIT"))
     InitRequested = true;
-  if (!strcmp(opcode.c_str(), "CHECK_CAR")) // if (opcode.equals("CHECK_CAR"))
+  if (!strcmp(opcode, "CHECK_CAR")) // if (opcode.equals("CHECK_CAR"))
     CheckCarRequested = true;
-  if (!strcmp(opcode.c_str(), "CHECK_BARRIER_ENTRY"))
+  if (!strcmp(opcode, "CHECK_BARRIER_ENTRY"))
     CheckBarrierEntryRequested = true;
-  if (!strcmp(opcode.c_str(), "CHECK_BARRIER_EXIT"))
+  if (!strcmp(opcode, "CHECK_BARRIER_EXIT"))
     CheckBarrierExitRequested = true;
-  if (!strcmp(opcode.c_str(), "OPENGATE_ENT"))
+  if (!strcmp(opcode, "OPENGATE_ENT"))
     OpengateEntryRequested = true;
-  if (!strcmp(opcode.c_str(), "OPENGATE_EXT"))
+  if (!strcmp(opcode, "OPENGATE_EXT"))
     OpengateExitRequested = true;
-  if (!strcmp(opcode.c_str(), "DISPLAY"))
+  if (!strcmp(opcode, "DISPLAY"))
     DisplayRequested = true;
-  if (!strcmp(opcode.c_str(), "COUNTER"))
+  if (!strcmp(opcode, "COUNTER"))
     CounterRequested = true;
-  if (!strcmp(opcode_license.c_str(), "LICENSE:")){
+  if (!strcmp(opcode_license, "LICENSE:")) {
     LicenseReadRequested = true;
-    LicenseNumber=opcode.c_str()+8;
+    LicenseNumber = opcode + 8;
   }
-  if (!strcmp(opcode.c_str(), "LICENSE_INVALID"))
+  if (!strcmp(opcode, "LICENSE_INVALID"))
     LicenseInvalidRequested = true;
-    
+
 }
 
 void processRequests() {
@@ -365,13 +380,13 @@ void processRequests() {
     Counter();
     CounterRequested = false;
   }
-  if(LicenseReadRequested){
+  if (LicenseReadRequested) {
     LicenseRead();
-    LicenseReadRequested=false;
+    LicenseReadRequested = false;
   }
-  if(LicenseInvalidRequested){
+  if (LicenseInvalidRequested) {
     LicenseInvalid();
-    LicenseInvalidRequested=false;
+    LicenseInvalidRequested = false;
   }
 }
 //Auxiliary functions
@@ -386,18 +401,18 @@ void TrafficLights_OFF()
   digitalWrite(LED_RED, HIGH);
   digitalWrite(LED_GREEN, LOW);
 }
-void blink_red_led(){
-  int delay_blink=120;
+void blink_red_led() {
+  int delay_blink = 120;
   digitalWrite(LED_RED, LOW);
   delay(delay_blink);
   digitalWrite(LED_RED, HIGH);
-      delay(delay_blink);
-    digitalWrite(LED_RED, LOW);
-        delay(delay_blink);
+  delay(delay_blink);
+  digitalWrite(LED_RED, LOW);
+  delay(delay_blink);
   digitalWrite(LED_RED, HIGH);
-    delay(delay_blink);
-    digitalWrite(LED_RED, LOW);
-        delay(delay_blink);
+  delay(delay_blink);
+  digitalWrite(LED_RED, LOW);
+  delay(delay_blink);
   digitalWrite(LED_RED, HIGH);
   delay(delay_blink);
 }
@@ -450,6 +465,7 @@ void print_to_lcd() {
     print_lcd_line(str, 0, 3);
   }
 #endif
+
 }
 byte check_car_detect(int trigPin, int echoPin, const byte lower_tresh, const byte upper_tresh, byte servo_id ) {
   byte check_flag = 0x00;
