@@ -51,12 +51,11 @@ void receiveFromArduino(char *buffer, int buffer_size)
         {
             // Wait for data to be received
             puts("No data on serial");
-            sleep(1);
+            sleep_ms(500);
         }
 
         // Read the character from serial
         char data = serialGetchar(serial);
-        printf("%c", data);
         // Store the character in the buffer
         *buffer = data;
         buffer++;
@@ -204,7 +203,7 @@ int main()
             sendToArduino(opcode);
             receiveFromArduino(receivedDataArduino, sizeof(receivedDataArduino));
             if (strcmp(receivedDataArduino, "TAKE_PHOTO_0") == 0)
-                setSysState(&sysState, &sysStatePrev, CHECK_CAR);
+                setSysState(&sysState, &sysStatePrev, INIT);
             else if (strcmp(receivedDataArduino, "TAKE_PHOTO_1") == 0)
             {
                 char *licensePlate = executePythonScript(); // should take the picture first to process and then run the algorithm?
