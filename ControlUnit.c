@@ -22,7 +22,8 @@ typedef enum
 
 int serial;
 char opcode[256], receivedDataArduino[256], sendDataArduino[256];
-
+int wait_after_send = 1250;
+int wait_after_state = 300;
 void sendToArduino(char *message)
 {
     serialPrintf(serial, "%s", message);
@@ -119,7 +120,7 @@ int checkLicensePlate(const char *licensePlate)
     if(isNullOrWhitespace(licensePlate))
     {
         printf("License plate is null or whitespace\n");
-        return 1;
+        return 0;
     }
 
     char licensePlateCopy[256];
@@ -167,20 +168,21 @@ int main()
     static States sysState = SETUP, sysStatePrev = SETUP;
     while (1)
     {
-        sleep_ms(500);
+        sleep_ms(wait_after_state);
         switch (sysState)
         {
         case SETUP:
             printf("System SETUP\n");
             sprintf(opcode, "SETUP");
             sendToArduino(opcode);
+            sleep_ms(wait_after_send);
             setSysState(&sysState, &sysStatePrev, INIT);
             break;
         case INIT:
             printf("System INIT\n");
             sprintf(opcode, "INIT");
             sendToArduino(opcode);
-            sleep(2);
+            sleep_ms(wait_after_send);
             setSysState(&sysState, &sysStatePrev, CHECK_CAR);
             break;
         case CHECK_CAR:
@@ -212,11 +214,17 @@ int main()
                 char response[256];
                 if (ok == 1)
                 {
+                    sprintf(opcode, "LICENSE:%s", licensePlate);
+                    sendToArduino(opcode);
+                    sleep_ms(wait_after_send);
                     setSysState(&sysState, &sysStatePrev, DISPLAY);
                     sprintf(response, "License plate found in the database");
                 }
                 else if (ok == 0)
                 {
+                    sprintf(opcode, "LICENSE:INVALID");
+                    sendToArduino(opcode);
+                    sleep_ms(wait_after_send);
                     setSysState(&sysState, &sysStatePrev, CHECK_CAR);
                     sprintf(response, "License plate not found in the database");
                 }
@@ -232,7 +240,7 @@ int main()
             printf("System CHECK_BARRIER_EXIT\n");
             sprintf(opcode, "CHECK_BARRIER_EXIT");
             sendToArduino(opcode);
-            sleep(2);
+            sleep_ms(wait_after_send);
             receiveFromArduino(receivedDataArduino, sizeof(receivedDataArduino));
             if (strcmp(receivedDataArduino, "CAR_EXIT_1") == 0)
                 setSysState(&sysState, &sysStatePrev, OPENGATE_EXT);
@@ -245,7 +253,7 @@ int main()
             printf("System DISPLAY\n");
             sprintf(opcode, "DISPLAY");
             sendToArduino(opcode);
-            sleep(2);
+            sleep_ms(wait_after_send);
             if (sysStatePrev == CHECK_BARRIER_ENTRY)
                 setSysState(&sysState, &sysStatePrev, OPENGATE_ENT);
             else if (sysStatePrev == COUNTER)
@@ -255,7 +263,7 @@ int main()
             printf("System OPENGATE_ENT\n");
             sprintf(opcode, "OPENGATE_ENT");
             sendToArduino(opcode);
-            sleep(2);
+            sleep_ms(wait_after_send);
             receiveFromArduino(receivedDataArduino, sizeof(receivedDataArduino));
             if (strcmp(receivedDataArduino, "LEFT_PARKING")==0)
                 setSysState(&sysState, &sysStatePrev, INIT);
@@ -268,7 +276,7 @@ int main()
             printf("System OPENGATE_EXT\n");
             sprintf(opcode, "OPENGATE_EXT");
             sendToArduino(opcode);
-            sleep(2);
+            sleep_ms(wait_after_send);
             receiveFromArduino(receivedDataArduino, sizeof(receivedDataArduino));
             if (strcmp(receivedDataArduino, "RETURNED_PARKING")==0)
                 setSysState(&sysState, &sysStatePrev, INIT);
@@ -281,7 +289,7 @@ int main()
             printf("System COUNTER\n");
             sprintf(opcode, "COUNTER");
             sendToArduino(opcode);
-            sleep(2);
+            sleep_ms(wait_after_send);
             setSysState(&sysState, &sysStatePrev, DISPLAY);
             break;
         default:

@@ -9,7 +9,7 @@ if(len(sys.argv)>1):
 else:
     image = cam.Camera.capture()
 
-licensePlates = ocr.LicensePlateProcessor.process(image,"canny",False)
+licensePlates = ocr.LicensePlateProcessor.process(image,"canny",True)
 validPlates = []
 for plate in licensePlates:
     stripped_plate = plate.replace(" ","")
