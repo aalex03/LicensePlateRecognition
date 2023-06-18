@@ -21,6 +21,7 @@ typedef enum
 } States;
 
 int serial;
+static States sysState = SETUP, sysStatePrev = SETUP;
 char opcode[256], receivedDataArduino[256], sendDataArduino[256];
 int wait_after_send = 1250;
 int wait_after_state = 300;
@@ -44,7 +45,6 @@ void sleep_ms(unsigned int milliseconds) {
 void receiveFromArduino(char *buffer, int buffer_size)
 {
     int index = 0;
-
     while (buffer_size > 1)
     {
         // Check if data is available
@@ -57,6 +57,7 @@ void receiveFromArduino(char *buffer, int buffer_size)
 
         // Read the character from serial
         char data = serialGetchar(serial);
+        putc(data, stdout);
         // Store the character in the buffer
         *buffer = data;
         buffer++;
@@ -165,7 +166,7 @@ int main()
         return 1;
     }
 
-    static States sysState = SETUP, sysStatePrev = SETUP;
+    
     while (1)
     {
         sleep_ms(wait_after_state);
@@ -209,8 +210,10 @@ int main()
                 setSysState(&sysState, &sysStatePrev, INIT);
             else if (strcmp(receivedDataArduino, "TAKE_PHOTO_1") == 0)
             {
-                char *licensePlate = executePythonScript(); // should take the picture first to process and then run the algorithm?
+                char *licensePlate = executePythonScript();
+                char *orig = licensePlate;
                 int ok = checkLicensePlate(licensePlate);
+                free(orig);
                 char response[256];
                 if (ok == 1)
                 {

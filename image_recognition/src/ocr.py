@@ -129,6 +129,7 @@ class LicensePlateProcessor:
         #logging.basicConfig(level=logging.DEBUG)
         img = LicensePlateProcessor._convertPILtoCV2(image)
         img = cv2.rotate(img,cv2.ROTATE_180)
+        #img = LicensePlateProcessor._sharpen_image(img)
         images = []
         plates = []
         images.append(("original",img))
@@ -142,8 +143,6 @@ class LicensePlateProcessor:
             LicensePlateProcessor._saveImages(images)
             return []
         for c in contours:
-            if len(plates) > 1:
-                return plates
             i = i+1
             cropped = LicensePlateProcessor._mask_and_crop(img,c)
             cropped = LicensePlateProcessor._sharpen_image(cropped)
