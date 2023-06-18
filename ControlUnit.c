@@ -136,9 +136,10 @@ int checkLicensePlate(const char *licensePlate)
             int exit_status = WEXITSTATUS(status);
             printf("License Plate: %s, Exit Status: %d\n", token, exit_status);
             // Add your desired logic based on the exit_status
-            if (exit_status == 1)
+            if (exit_status == 0)
             {
-                return exit_status;
+                licensePlate = token;
+                return 1;
             }
         }
 
@@ -207,14 +208,14 @@ int main()
             else if (strcmp(receivedDataArduino, "TAKE_PHOTO_1") == 0)
             {
                 char *licensePlate = executePythonScript(); // should take the picture first to process and then run the algorithm?
-                int exit_status = checkLicensePlate(licensePlate);
+                int ok = checkLicensePlate(licensePlate);
                 char response[256];
-                if (exit_status == 0)
+                if (ok == 1)
                 {
                     setSysState(&sysState, &sysStatePrev, DISPLAY);
                     sprintf(response, "License plate found in the database");
                 }
-                else if (exit_status == 1)
+                else if (ok == 0)
                 {
                     setSysState(&sysState, &sysStatePrev, CHECK_CAR);
                     sprintf(response, "License plate not found in the database");
