@@ -34,6 +34,7 @@ int pos = 0;
 int park_cnt = 5;
 long dist_entr = 0, dist_ext = 0;
 String str, str_l0, str_l1, str_l2, str_l3;
+String LicenseNumber="";
 bool Number_Valid = true;
 bool car_in_front_of_entry_servo_barrier = false, car_in_front_of_ext_servo_barrier = false;
 bool car_in_back_of_entry_servo_barrier = false, car_in_back_of_ext_servo_barrier = false;
@@ -46,6 +47,7 @@ const byte display_print_cnt_max = 10;
 bool trafficLightsON = false;
 byte CounterStatus = 0x00;
 bool photo_taken_flag=false;
+bool LicenseNumberValid=false;
 Servo servo_entr, servo_ext;
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
@@ -59,6 +61,8 @@ bool OpengateEntryRequested = false;
 bool OpengateExitRequested = false;
 bool DisplayRequested = false;
 bool CounterRequested = false;
+bool LicenseReadRequested = false;
+bool LicenseInvalidRequested = false;
 
 // vars for communication
 
@@ -237,6 +241,17 @@ void OpengateExit() {
 
 }
 void Display() {
+  str_l0 = "Team Rocket Parking";
+  str_l1 = "Locuri libere: " + String(park_cnt);
+
+  
+  if(LicenseNumberValid)
+  str_l2 = "Nr. inmat: "+LicenseNumber;
+  else{
+  str_l2 = "Nr. inmat invalid";
+  str_l3 = "ACCES RESPINS!";
+  }
+  
   print_to_lcd();
   if (trafficLightsON == true)
     TrafficLights_ON();
@@ -258,6 +273,12 @@ void Counter() {
   str_l3 = "Bine ati venit!";
   trafficLightsON = false;
 }
+void LicenseRead(){
+  LicenseNumberValid=true;
+}
+void LicenseInvalid(){
+  LicenseNumberValid=false;
+}
 
 //Communication interfaces
 void transmitData(String data) {
@@ -275,7 +296,10 @@ void processMessage(String opcode) {
   //good for debugging signals
   //lcd.clear();
   // print_lcd_line(opcode, 0, 0);
-
+  String opcode_license;
+  strncpy(opcode_license.c_str(),opcode.c_str(),8);
+  opcode_license[8]='\0';
+ 
   if (!strcmp(opcode.c_str(), "SETUP"))
     SetupRequested = true;
   if (!strcmp(opcode.c_str(), "INIT"))
@@ -294,9 +318,13 @@ void processMessage(String opcode) {
     DisplayRequested = true;
   if (!strcmp(opcode.c_str(), "COUNTER"))
     CounterRequested = true;
+  if (!strcmp(opcode_license.c_str(), "LICENSE:")){
+    LicenseReadRequested = true;
+    LicenseNumber=opcode.c_str()+8;
+  }
+  if (!strcmp(opcode.c_str(), "LICENSE_INVALID"))
+    LicenseInvalidRequested = true;
     
-    
-
 }
 
 void processRequests() {
@@ -337,6 +365,14 @@ void processRequests() {
     Counter();
     CounterRequested = false;
   }
+  if(LicenseReadRequested){
+    LicenseRead();
+    LicenseReadRequested=false;
+  }
+  if(LicenseInvalidRequested){
+    LicenseInvalid();
+    LicenseInvalidRequested=false;
+  }
 }
 //Auxiliary functions
 void TrafficLights_ON()
@@ -351,14 +387,19 @@ void TrafficLights_OFF()
   digitalWrite(LED_GREEN, LOW);
 }
 void blink_red_led(){
+  int delay_blink=120;
   digitalWrite(LED_RED, LOW);
+  delay(delay_blink);
   digitalWrite(LED_RED, HIGH);
-  delay(300);
+      delay(delay_blink);
     digitalWrite(LED_RED, LOW);
+        delay(delay_blink);
   digitalWrite(LED_RED, HIGH);
-    delay(300);
+    delay(delay_blink);
     digitalWrite(LED_RED, LOW);
+        delay(delay_blink);
   digitalWrite(LED_RED, HIGH);
+  delay(delay_blink);
 }
 
 byte print_lcd_line(String str_in, byte disp_row, byte disp_col) {
