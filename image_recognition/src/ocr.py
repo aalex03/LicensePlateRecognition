@@ -142,6 +142,8 @@ class LicensePlateProcessor:
             LicensePlateProcessor._saveImages(images)
             return []
         for c in contours:
+            if len(plates) > 1:
+                return plates
             i = i+1
             cropped = LicensePlateProcessor._mask_and_crop(img,c)
             cropped = LicensePlateProcessor._sharpen_image(cropped)
