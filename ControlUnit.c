@@ -28,6 +28,7 @@ int wait_after_state = 300;
 void sendToArduino(char *message)
 {
     serialPrintf(serial, "%s", message);
+    printf("Sent to Arduino: %s\n", message);
 }
 
 void setSysState(States *sysState, States *prevState, States newState)
@@ -213,7 +214,6 @@ int main()
                 char *licensePlate = executePythonScript();
                 char *orig = licensePlate;
                 int ok = checkLicensePlate(licensePlate);
-                free(orig);
                 char response[256];
                 if (ok == 1)
                 {
@@ -225,7 +225,7 @@ int main()
                 }
                 else if (ok == 0)
                 {
-                    sprintf(opcode, "LICENSE:INVALID");
+                    sprintf(opcode, "LICENSE_INVALID");
                     sendToArduino(opcode);
                     sleep_ms(wait_after_send);
                     setSysState(&sysState, &sysStatePrev, CHECK_CAR);
@@ -237,6 +237,7 @@ int main()
                     sprintf(response, "Error occurred while checking the license plate in the database");
                 }
                 printf("    License plate check status: %s\n", response);
+                free(orig);
             }
             break;
         case CHECK_BARRIER_EXIT:

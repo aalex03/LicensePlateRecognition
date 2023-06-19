@@ -128,6 +128,7 @@ class LicensePlateProcessor:
     def process(image : Image, option : str, saveImages : bool) -> list:
         #logging.basicConfig(level=logging.DEBUG)
         img = LicensePlateProcessor._convertPILtoCV2(image)
+        #img = cv2.resize(img,(640,480))
         img = cv2.rotate(img,cv2.ROTATE_180)
         #img = LicensePlateProcessor._sharpen_image(img)
         images = []
