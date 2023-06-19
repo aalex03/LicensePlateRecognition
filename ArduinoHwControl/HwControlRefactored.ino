@@ -26,15 +26,15 @@
 #define CAR_PRESENT_EXT_S1 2
 #define CAR_PRESENT_ENT_S2 3
 #define CAR_PRESENT_EXT_S2 4
-#define BOTTOM_PHOTO_TRESH 10
+#define BOTTOM_PHOTO_TRESH 8
 #define TOP_PHOTO_TRESH 15 // use 12,13 in real time
 #define CAR_ENTERED_PARKING 0x01
 #define CAR_EXITED_PARKING 0x02
 int pos = 0;
-int park_cnt = 5;
+int park_cnt = 2;
 long dist_entr = 0, dist_ext = 0;
 String str, str_l0, str_l1, str_l2, str_l3;
-String LicenseNumber = "";
+char LicenseNumber ="";
 bool Number_Valid = true;
 bool car_in_front_of_entry_servo_barrier = false, car_in_front_of_ext_servo_barrier = false;
 bool car_in_back_of_entry_servo_barrier = false, car_in_back_of_ext_servo_barrier = false;
@@ -43,7 +43,7 @@ byte access_denied_flag = 0x00;
 byte parking_full_flag = 0x00;
 byte state_entr = 0x00, state_ext = 0x00;
 byte display_print_cnt = 0;
-const byte display_print_cnt_max = 10;
+const byte display_print_cnt_max = 5;
 bool trafficLightsON = false;
 byte CounterStatus = 0x00;
 bool photo_taken_flag = false;
@@ -110,8 +110,6 @@ void setup_main() {
 //Main functions of the control routine
 void Init() {
   TrafficLights_OFF();
-  if (photo_taken_flag == true)
-    str_l3 = "ACCES RESPINS!";
   print_to_lcd();//temp hack, to update states in main CU later
   access_denied_flag = 0x00;
   parking_full_flag = 0x00;
@@ -123,7 +121,8 @@ void Init() {
   car_in_front_of_ext_servo_barrier = false;
   car_in_back_of_entry_servo_barrier = false;
   car_in_back_of_ext_servo_barrier = false;
-  photo_taken_flag = true;
+  photo_taken_flag = false;
+  LicenseNumberValid = false;
 }
 void CheckCar() {
   byte car_present_ent_s1_val = 0x00, car_present_ext_s1_val = 0x00, car_present_ent_s2_val = 0x00, car_present_ext_s2_val = 0x00;
@@ -160,7 +159,6 @@ void CheckBarrierEntry() {
   if (car_in_back_of_entry_servo_barrier == false && park_cnt > 0 && dist_check >= BOTTOM_PHOTO_TRESH && dist_check <= TOP_PHOTO_TRESH) {
     blink_red_led();
     transmitData("TAKE_PHOTO_1");
-    if (LicenseNumberValid)
       photo_taken_flag = true;
     state_entr = 1;
     trafficLightsON = true;
@@ -174,6 +172,10 @@ void CheckBarrierEntry() {
   str_l0 = "Team Rocket Parking";
   str_l1 = "Locuri libere: " + String(park_cnt);
   str_l2 = "Orar parcare 06-23";
+  if (photo_taken_flag) {
+    //str_l2 = "Nr. inmat: " + LicenseNumber;
+  photo_taken_flag = false;
+  }
   if (state_entr == 1)
     str_l3 = "ACCES PERMIS!";
   if (access_denied_flag == 1)
@@ -247,22 +249,13 @@ void OpengateExit() {
 void Display() {
   str_l0 = "Team Rocket Parking";
   str_l1 = "Locuri libere: " + String(park_cnt);
-  str_l2 = "Orar parcare 06-23";
-
-  if (photo_taken_flag) {
-    str_l2 = "Nr. inmat: " + LicenseNumber;
-    photo_taken_flag = false;
-  }
-
+  
+/*
   if (!LicenseNumberValid) {
     str_l2 = "Nr. inmat invalid";
     str_l3 = "ACCES RESPINS!";
   }
-  if (photo_taken_flag) {
-    str_l2 = "Nr. inmat: " + LicenseNumber;
-    photo_taken_flag = false;
-  }
-
+*/
   print_to_lcd();
   if (trafficLightsON == true)
     TrafficLights_ON();
